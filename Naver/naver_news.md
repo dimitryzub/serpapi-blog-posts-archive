@@ -1,16 +1,16 @@
+This blog post you will see how to scrape title, link, snippet, news press name, date news published from Naver News Results using Python.
 
-
-If you're already familiar with how I structure blog posts, then you can <a href="#what_will_be_scraped">jump to *what will be scraped* section</a> since the *Intro*, *Prerequisites*, and *Import* sections are, for the most part, boilerplate parts.
+If you're already familiar with how I structure blog posts, then you can <a href="#what_will_be_scraped">jump to *what will be scraped* section</a> since the *Intro*, *Prerequisites*, and *Import* sections are, for the most part, boilerplate part.
 
 > This blog is suited for users with little web scraping experience.
 
 ___
 - <a href="#naver">What is Naver Search</a>
 - <a href="#intro">Intro</a>
-    - <a href="#prerequisites">Prerequisites</a>
-    - <a href="#imports">Imports</a>
+  - <a href="#prerequisites">Prerequisites</a>
+  - <a href="#imports">Imports</a>
 - <a href="#what_will_be_scraped">What will be scraped</a>
-    - <a href="#process">Process</a>
+  - <a href="#process">Process</a>
 - <a href="#code">Code</a>
 - <a href="#links">Links</a>
 - <a href="#outro">Outro</a>
@@ -33,13 +33,13 @@ pip install lxml
 pip install beautifulsoup4
 ```
 
-Make sure to have a basic knowledge of Python, have a basic idea of the libraries mentioned above (*except API*), and have a basic understanding of  `CSS` selectors because you'll see mostly usage of [`select()`/`select_one()`](https://www.crummy.com/software/BeautifulSoup/bs4/doc/#css-selectors) `beautifulsoup` methods that accept `CSS` selectors.
+Make sure to have a basic knowledge of Python, have a basic idea of the libraries mentioned above, and have a basic understanding of  `CSS` selectors because you'll see mostly usage of [`select()`/`select_one()`](https://www.crummy.com/software/BeautifulSoup/bs4/doc/#css-selectors) `beautifulsoup` methods that accept `CSS` selectors.
 
 Usually, I'm using [SelectorGadget](https://selectorgadget.com/) extension to grab `CSS` selectors by clicking on the desired element in the browser. [`CSS` selectors reference](https://www.w3schools.com/cssref/css_selectors.asp), or train on a few examples via [CSS Diner](https://flukeout.github.io/).
 
 However, if SelectorGadget can't get the desired element, I use Elements tab via Dev Tools (*F12 on a keyboard*) to locate and grab `CSS` selector(s) or other HTML elements.
 
-To test if the selector extracts correct data you can place those `CSS` selector(s) in SelectorGadget window, or via Dev Tools Console tab using [`$$(".SELECTOR")`](https://developer.chrome.com/docs/devtools/console/utilities/#querySelectorAll-function) which is equivalent to [`document.querySelectorAll(".SELECTOR")`](https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll) to see if the correct elements are selected.
+To test if the selector extracts correct data you can place those `CSS` selector(s) in SelectorGadget window, or via Dev Tools Console tab using [`$$(".SELECTOR")`](https://developer.chrome.com/docs/devtools/console/utilities/#querySelectorAll-function) which is equivalent to [`document.querySelectorAll(".SELECTOR")`](https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll) to see if the correct elements being selected.
 
 <h2 id="imports">Imports</h2>
 
@@ -58,7 +58,7 @@ All News Results from the first page.
 
 If you don't need an explanation, jump to the <a href="#code">code section</a>.
 
-There's not a lot of steps that need to be done, we need to:
+There're not a lot of steps that needs to be done, we need to:
 1. Make a request and save HTML locally.
 2. Find correct `CSS` selectors or HTML elements from where to extract data.
 3. Extract data.
@@ -123,9 +123,11 @@ params = {
 
 Pass `user-agent` to request [`headers`](https://docs.python-requests.org/en/master/user/quickstart/#custom-headers) and, pass query `params` while making a request.
 
-You can read more in-depth about it in the article I wrote about why it's a good idea to [pass `user-agent` to request header](https://dev.to/dimitryzub/how-to-reduce-chance-being-blocked-while-web-scraping-search-engines-1o46).
+You can read more in-depth about this topic in the article below about why it's a good idea to pass `user-agent` to request header.
 
-After the request is made, then we receive a response which will be decoded via [`.text`](https://docs.python-requests.org/en/master/user/quickstart/#response-content).
+{% post dimitryzub/how-to-reduce-chance-being-blocked-while-web-scraping-search-engines-1o46#user-agent %}
+
+After request is made, then we receive a response which will be decoded via [`.text`](https://docs.python-requests.org/en/master/user/quickstart/#response-content).
 
 ```python
 html = requests.get("https://search.naver.com/search.naver", params=params, headers=headers).text
@@ -161,10 +163,10 @@ Get a `CSS` selector for title, link, etc. that will be used in extracting part
 ```python
 for news_result in soup.select(".list_news .bx"):
     
-    # hey, news_results, grab TEXT value from every element with ".news_tit" selector 
+    # hey, news_results, grab TEXT from every element with ".news_tit" selector 
     title = news_result.select_one(".news_tit").text
 
-    # hey, news_results, grab href (link) attribute from every element with ".news_tit" selector 
+    # hey, news_results, grab href (link) from every element with ".news_tit" selector 
     link = news_result.select_one(".news_tit")["href"]
     # other elements..
 ```
@@ -205,7 +207,7 @@ with open("minecraft_naver_news.html", mode="r") as html_file:
     print(json.dumps(news_data, indent=2, ensure_ascii=False))
 ```
 
-### Now let's see what is going on here.
+### Now lets see what is going on here.
 
 #### Import `bs4`, `lxml` and `json` libraries
 
@@ -216,7 +218,7 @@ from bs4 import BeautifulSoup
 
 #### Open saved HTML file and pass to `BeautifulSoup()`
 
-Open saved HTML file and change the mode from writing (`mode="w"`) to reading (`mode="r"`) and pass it to `BeautifulSoup()` so it can extract elements, and assigned `"lxml"` as an HTML parser.
+Open saved HTML file and change the mode from writing (`mode="w"`) to reading (`mode="r"`) and pass it to `BeautifulSoup()` so it can extract elements, and assigned `"lxml"` as a HTML parser.
 
 
 ```python
@@ -299,7 +301,7 @@ ____
 
 <h2 id="code">Full Code</h2>
 
-Have a look at the second function that will make an actual request to Naver search with passed query parameters. [Test in the online IDE](https://replit.com/@DimitryZub1/Scrape-Naver-News-Results#bs4_extract_naver_news.py) yourself.
+Have a look at third function that will make an actual request to Naver search with passed query parameters. [Test in the online IDE](https://replit.com/@DimitryZub1/Scrape-Naver-News-Results#bs4_extract_naver_news.py) yourself.
 
 ```python
 import lxml, json, requests
@@ -507,7 +509,7 @@ ____
 
 <h2 id="outro">Outro</h2>
 
-If you have anything to share, any questions, suggestions, or something that isn't working correctly, feel free to drop a comment in the comment section or reach out via Twitter at [@dimitryzub](https://twitter.com/DimitryZub), or [@serp_api](https://twitter.com/serp_api).
+If you have anything to share, any question, suggestion, or something that isn't working correctly, feel free to drop a comment in the comment section or via Twitter at [@dimitryzub](https://twitter.com/DimitryZub), or [@serp_api](https://twitter.com/serp_api).
 
 Yours,
 Dimitry, and the rest of SerpApi Team.
