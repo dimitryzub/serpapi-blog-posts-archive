@@ -127,7 +127,7 @@ It can be also achieved by creating new `Virtual Environment` instead of creatin
 
 - Open `Run Configuration` -> `Python Interpreter` -> `Use specific interpreter` path is set to `python.exe` path from the `venv` folder (e.g. newly created `virtual environment`).
 
-Note: When using such method, Bash commands not found for unknown for me reason.
+> Note: When using such method, Bash commands not found for unknown for me reason.
 
 ```
 $ which python
