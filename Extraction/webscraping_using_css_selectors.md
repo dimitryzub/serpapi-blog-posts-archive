@@ -1,16 +1,16 @@
-This tutorial is all about `CSS` selectors, what they're, their pros and cons, and why they matter from a web scraping perspective with Python examples (*it will the almost same for other languages as well*).
+This tutorial is all about `CSS` selectors, what they're, their pros and cons, and why they matter from a web scraping perspective with Python examples.
 
 > This blog is suited for users with little web scraping experience.
 
 ___
 
 - <a href="#intro">Intro</a>
-    - <a href="#prerequisites">Prerequisites</a>
+  - <a href="#prerequisites">Prerequisites</a>
 - <a href="#explanation">Explanation</a>
-    - <a href="#css_gadget">SelectorGadget</a>
-    - <a href="#css_by_hand">Pick CSS Selectors by Hand</a>
-    - <a href="#test_css">Test CSS Selector</a>
-    - <a href="#css_cons">Cons of CSS Selector</a>
+  - <a href="#css_gadget">SelectorGadget</a>
+  - <a href="#css_by_hand">Pick CSS Selectors by Hand</a>
+  - <a href="#test_css">Test CSS Selector</a>
+  - <a href="#css_cons">Cons of CSS Selector</a>
 - <a href="#code">Code Examples</a>
 - <a href="#links">Links</a>
 - <a href="#outro">Outro</a>
@@ -23,7 +23,7 @@ This blog post is about understanding `CSS` selectors when doing web page web sc
 
 ```python
 pip install requests
-pip install lxml 
+pip install lxml
 pip install beautifulsoup4
 ```
 
@@ -185,7 +185,7 @@ Other Useful `CSS` Selectors
 - `a:has(img)`: Selects every element `<a>` element that *has* an `<img>` element.
 
 
-Additional useful `CSS` selectors you can find on [W3C Level 4 Selectors](https://drafts.csswg.org/selectors/),  [W3Schools](https://www.w3schools.com/cssref/css_selectors.asp), and [MDN documentation](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors).
+Additional useful `CSS` selectors you can find on [W3C Level 4 Selectors](https://drafts.csswg.org/selectors/),  [W3Schools `CSS` Selectors Reference](https://www.w3schools.com/cssref/css_selectors.asp), and [MDN documentation](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors).
 
 ____
 
@@ -199,13 +199,13 @@ Place those `CSS` selector(s) in the SelectorGadget window and see what elements
 
 ![Image description](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/n0op758uowsmquay4prl.png)
 
-Use Dev Tools Console tab via [`$$(".selector")`](https://developer.chrome.com/docs/devtools/console/utilities/#querySelectorAll-function) method (*creates an `array` of elements*):
+Use Dev Tools Console tab via [`$$(".selector")`](https://developer.chrome.com/docs/devtools/console/utilities/#querySelectorAll-function) method (*creates an `array` (`list()`) of elements*):
 
 ```javascript
 $$(".DKV0Md")
 ```
 
-Which is equivalent to [`document.querySelectorAll(".selector")`](https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll) method ([according to Chrome Developer](https://developer.chrome.com/docs/devtools/console/utilities/#querySelector-function)):
+Which is equivalent to [`document.querySelectorAll(".selector")`](https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll) method ([according to Chrome Developers website](https://developer.chrome.com/docs/devtools/console/utilities/#querySelector-function)):
 
 ```javascript
 document.querySelectorAll(".DKV0Md")
@@ -286,6 +286,23 @@ ___
 
 ![Image description](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/6sc0y2i9vrrxhefl48fz.png)
 
+Testing `.post-card-title` `CSS` selector in Devtools Console:
+
+```
+$$(".post-card-title")
+
+(7) [h2.post-card-title, h2.post-card-title, h2.post-card-title, h2.post-card-title, h2.post-card-title, h2.post-card-title, h2.post-card-title]
+0: h2.post-card-title
+1: h2.post-card-title
+2: h2.post-card-title
+3: h2.post-card-title
+4: h2.post-card-title
+5: h2.post-card-title
+6: h2.post-card-title
+length: 7
+[[Prototype]]: Array(0)
+```
+
 Code:
 
 ```python
@@ -307,23 +324,6 @@ Scrape Multiple Google Answer Box Layouts with Python
 SerpApi’s Baidu Search API
 How to reduce the chance of being blocked while web scraping search engines
 '''
-```
-
-Testing `.post-card-title` `CSS` selector in Devtools Console:
-
-```
-$$(".post-card-title")
-
-(7) [h2.post-card-title, h2.post-card-title, h2.post-card-title, h2.post-card-title, h2.post-card-title, h2.post-card-title, h2.post-card-title]
-0: h2.post-card-title
-1: h2.post-card-title
-2: h2.post-card-title
-3: h2.post-card-title
-4: h2.post-card-title
-5: h2.post-card-title
-6: h2.post-card-title
-length: 7
-[[Prototype]]: Array(0)
 ```
 
 ___
@@ -363,42 +363,8 @@ https://dev.to/alexeagleson/how-to-create-and-publish-a-react-component-library-
 A One Piece of CSS Art!
 https://dev.to/afif/a-one-piece-of-css-art-225l
 Windster - Tailwind CSS admin dashboard interface [MIT License]
+https://dev.to/themesberg/windster-tailwind-css-admin-dashboard-interface-mit-license-3lb6
 '''
-```
-
-___
-
-### Using SerpApi
-
-Alternatively, you can achieve the same thing when using SerpApi. Except you don't have to think about it because all of the tedious work is already done under the hood for the end users.
-
-You don't have to think about what `CSS` selector to use, how to bypass blocks from the search enignes, scale extraction process, maintain the code over time (*if something in the HTML will be changed*).
-
-
-Example code to integrate:
-
-```python
-from serpapi import GoogleSearch
-
-params = {
-  "api_key": "YOUR_API_KEY",
-  "engine": "google",              # search engine
-  "q": "fus ro dah",               # search query
-  "google_domain": "google.com",   # google domain
-  "gl": "us",                      # country to make search from
-  "hl": "en"                       # language
-}
-
-search = GoogleSearch(params)
-results = search.get_dict()
-
-# elegant and more readable way to access the data you need
-for result in results["organic_results"]:
-    title = result["title"]
-    link = result["link"]
-    snippet = result["snippet"]
-
-    print(f"{title}\n{link}\n{snippet}\n")
 ```
 
 ___
