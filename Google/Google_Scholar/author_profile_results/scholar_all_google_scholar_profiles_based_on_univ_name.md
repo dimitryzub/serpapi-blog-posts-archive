@@ -1,40 +1,40 @@
-🔨**What is required**: Understanding of loops, data structures, basic knowledge of CSS selectors and XPath. `requests`
-, `parsel`, `serpapi` libraries.
-
-⏱️**How long will it take**: ~10-20 minutes.
-
-___
-
 - <a href="#what_will_be_scraped">What will be scraped</a>
+- <a href="#how_to_search_uni">How university filtering works</a>
 - <a href="#prerequisites">Prerequisites</a>
-- <a href="#process">Process</a>
 - <a href="#full_code">Full Code</a>
+  - <a href="#code_explanation">Code explanation</a>
+- <a href="#serpapi">SerpApi Solution</a>
 - <a href="#links">Links</a>
 - <a href="#outro">Outro</a>
-
-___
 
 <h2 id="what_will_be_scraped">What will be scraped</h2>
 
 ![image](https://user-images.githubusercontent.com/78694043/154103222-8d3471a7-cbfe-46ed-9ddb-9369b7c6a518.png)
 
+<h2 id="how_to_search_uni">How university filtering works</h2>
+
+| Search engine operators | Explanation |Search query |
+|-------------------------|-------------|-------------|
+| Label: `label:<keyword>` | Label is a search keyword | [`label:computer_vision`](https://scholar.google.com/citations?hl=en&view_op=search_authors&mauthors=label%3Acomputer_vision+&btnG=) |
+| Double-quotes: `""` | Specific `<university name>` search | [`label:computer_vision "Michigan State University"`](https://scholar.google.com/citations?hl=en&view_op=search_authors&mauthors=label%3Acomputer_vision%20Michigan%20State%20University&btnG=)|
+|  Pipe operator: `\|` | `<univ. name>` OR `<univ. abbrivation name>` | [`label:computer_vision "Michigan State University"\|"U.Michigan"`](https://scholar.google.com/citations?hl=en&view_op=search_authors&mauthors=label%3Acomputer_vision%20%22Michigan%20State%20University%22%7C%22U.Michigan%22&btnG=)|
+
+![gif_1_02](https://user-images.githubusercontent.com/78694043/159514111-a28b2fc6-c876-4ed4-be47-e3a505b22f2d.gif)
+
 <h2 id="prerequisites">Prerequisites</h2>
 
 **Basic knowledge scraping with CSS selectors**
 
-`CSS` selectors declare which part of the markup a style applies to thus allowing to extract data from matching tags and attributes.
+CSS selectors declare which part of the markup a style applies to thus allowing to extract data from matching tags and attributes.
 
-If you haven't scraped with `CSS` selectors, there's a dedicated blog post of mine
-about [how to use `CSS` selectors when web-scraping](https://serpapi.com/blog/web-scraping-with-css-selectors-using-python/) that covers
-what it is, pros and cons, and why they're matter from a web-scraping perspective.
+If you haven't scraped with CSS selectors, there's a dedicated blog post of mine about [how to use CSS selectors when web-scraping](https://serpapi.com/blog/web-scraping-with-css-selectors-using-python/) that covers what it is, pros and cons, and why they're matter from a web-scraping perspective.
 
 
 **Separate virtual environment**
 
 If you didn't work with a virtual environment before, have a look at the dedicated [Python virtual environments tutorial using Virtualenv and Poetry](https://serpapi.com/blog/python-virtual-environments-using-virtualenv-and-poetry/) blog post of mine to get familiar.
 
-In short, it's a thing that creates an independent set of installed libraries including different Python versions that can coexist with each
-other at the same system thus preventing libraries or Python version conflicts.
+In short, it's a thing that creates an independent set of installed libraries including different Python versions that can coexist with each other at the same system thus preventing libraries or Python version conflicts.
 
 📌Note: this is not a strict requirement for this blog post.
 
@@ -111,6 +111,8 @@ def scrape_all_authors_from_university(label: str, university_name: str) -> list
 print(json.dumps(scrape_all_authors_from_university(label="biology", university_name="Michigan University"), indent=2))
 ```
 
+<h2 id="code_explanation">Code Explanation</h2>
+
 Import libraries:
 
 ```python
@@ -118,10 +120,13 @@ import requests, re, json
 from parsel import Selector
 ```
 
-- `requests` to make a request.
-- `re` to match parts of the HTML via regular expression.
-- `json` for pretty printing, in this case.
-- [`parsel`](https://parsel.readthedocs.io/en/latest/index.html) is a library to extract and remove data from HTML and XML documents using XPath and CSS selectors. It's similar to `beautifulsoup4` except it supports XPath and has its own CSS pseudo-elements support, for example `::text` or `::attr(<attribute_name>)`. Also, [every CSS selector query translates to XPath](https://github.com/scrapy/parsel/blob/f5f73d34ba787ad0c9df25de295de6e196ecd91d/parsel/selector.py#L350-L351) using [`cssselect`](https://github.com/scrapy/cssselect) package.
+| Library    | Explanation                                             |
+|------------|---------------------------------------------------------|
+| `requests` | to make a request.                                      |
+| `re`       | to match parts of HTML via regular expression.          |
+| `json`     | to make pretty printing, in this case.                  |
+|[`parsel`](https://parsel.readthedocs.io/en/latest/index.html)| to extract and remove data from HTML and XML documents. |
+
 
 Define a function:
 
@@ -130,8 +135,11 @@ def scrape_all_authors_from_university(label: str, university_name: str) -> list
     # further code
 ```
 
-- `label: str, university_name: str` is a parameter annotations which tells people who read the program or libraries/programs such as `pylint` that `label` and `university_name` should be a `str`.
-- `-> list[dict[str]]` is a [function return annotation](https://www.python.org/dev/peps/pep-3107/#syntax).
+| Code                               | Explanation                                                                           |
+|------------------------------------|---------------------------------------------------------------------------------------|
+| `label: str, university_name: str` | parameter annotations which tells that `label` and `university_name` should be a `str`|
+|`-> list[dict[str]]`|[function return annotation](https://www.python.org/dev/peps/pep-3107/#syntax)|
+
 
 Create search query params, request headers and make a request:
 
@@ -150,7 +158,9 @@ headers = {
 }
 ```
 
-- [`User-Agent`](https://developer.mozilla.org/en-US/docs/Glossary/User_agent) is used to pretend that it's a "real" user sends a request, not a bot or a script.  
+|Code| Explanation                                                                |
+|----|----------------------------------------------------------------------------|
+|[`User-Agent`](https://developer.mozilla.org/en-US/docs/Glossary/User_agent)| to pretend that it's a "real" user sends a request, not a bot or a script. |
 
 
 Create temporary `list` to store extracted data:
@@ -174,8 +184,11 @@ html = requests.get("https://scholar.google.com/citations", params=params, heade
 select = Selector(html.text)
 ```
 
-- [`timeout=30`](https://docs.python-requests.org/en/master/user/quickstart/#timeouts) tells `requests` to stop waiting for response after 30 seconds.
-- `Selector()` is like `BeautifulSoup()` object, if you used it before.
+| Code                                                                                                                        | Explanation                                                      |
+|-----------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------|
+| [`timeout=30`](https://docs.python-requests.org/en/master/user/quickstart/#timeouts)                                        | to tell `requests` to stop waiting for response after 30 seconds. |
+| [`Selector()`](https://github.com/scrapy/parsel/blob/f5f73d34ba787ad0c9df25de295de6e196ecd91d/parsel/selector.py#L221-L233) | like `BeautifulSoup()` object, if you used it before.        |
+
 
 Extract the data:
 
@@ -189,13 +202,11 @@ for profile in select.css(".gs_ai_chpr"):
     interests = profile.css(".gs_ai_one_int::text").getall()
 ```
 
-- `for profile in select.css(".gs_ai_chpr")` is a CSS container with all the profile data over which we need to iterate.
-- `css()` is like [`select()`](https://www.crummy.com/software/BeautifulSoup/bs4/doc/#css-selectors) `beautifulsoup` method.
-- `::text` or `::attr(<attribute_name>)` is a `parsel` pseudo-element to grab the text or attributes out of the element node, and `get()` will grab the actual data. 
-- `xpath('normalize-space()')` will grab those blank text nodes since `css(<selector>::text)` will ignore blank text nodes
- since [`parsel` `css()` method translates everything to XPath](https://github.com/scrapy/parsel/blob/f5f73d34ba787ad0c9df25de295de6e196ecd91d/parsel/selector.py#L350-L351) and pseudo-element `::text` will be translated to XPath `/text()` which ignores blank text nodes.
- `xpath('normalize-space()')` will grab those blank text nodes child nodes. There's an [issue `#62` on Parsel](https://github.com/scrapy/parsel/issues/62) regarding this topic. 
-- `getall()` return a `list` of all matches.
+|Code| Explanation                                                                                                            |
+|----|------------------------------------------------------------------------------------------------------------------------|
+|`::text` or `::attr(<attribute_name>)`| `parsel` pseudo-element to grab the text or attributes out of the element node, and `get()` will grab the actual data. |
+|`xpath('normalize-space()')`| to [grab blank next child nodes](https://github.com/scrapy/parsel/issues/62).                                          |
+|`getall()`| to return al `list` of all matches.                                                                                    |
 
 
 Append extracted data as to temporary `list` as dictionary:
@@ -223,7 +234,10 @@ else:
     profiles_is_present = False
 ```
 
-- `::attr(onclick)` will grab `"onclick"` attribute. 
+| Code                     | Explanation                                       |
+|--------------------------|---------------------------------------------------|
+| `re.search()`            | to search next page token via regular expression. |
+| `params["astart"] += 10` | to increment query parameter to a next page.      |
 
 Return and print the data:
 
@@ -254,12 +268,13 @@ Part of the output:
 
 ___
 
+<h2 id="serpapi">SerpApi Solution</h2>
 
 Alternatively, you can achieve the same by using [Google Scholar Profiles API](https://serpapi.com/google-scholar-profiles-api) from SerpApi.
 
 The difference is that there's no need to create the parser and maintain it, figure out how to bypass blocks from search engines and how to scale it.
 
-Example code to integrate: 
+Example code to integrate to achieve almost the same as in the `parsel` example: 
 
 ```python
 import os
@@ -322,8 +337,11 @@ from urllib.parse import urlsplit, parse_qsl
 from serpapi import GoogleSearch
 ```
 
-- `os` to access environment variable key.
-- `urllib` to split URL and pass new page data to the search.
+| Code      | Explanation                                                      |
+|-----------|------------------------------------------------------------------|
+| `os`      | to access environment variable key.                              |
+| `urllib`  | to split URL in parts and pass new page data to `GoogleSearch()` |
+
 
 Define a function with argument and return annotations:
 
@@ -358,7 +376,9 @@ while profiles_is_present:
     # further code..
 ```
 
-- `search.get_dict()` needs to be in the `while` loop because after each `while` iteration search parameters will be updated. If it will be outside `while` loop, the same search parameters (token ID) will be applying over and over again.  
+| Code                 | Explanation                                                      |
+|----------------------|------------------------------------------------------------------|
+| `search.get_dict()`  | needs to be in the `while` loop because after each `while` iteration search parameters will be updated. If it will be outside `while` loop, the same search parameters (token ID) will be applying over and over again.|
 
 Iterate over profile results:
 
@@ -455,13 +475,13 @@ ___
 
 <h2 id="outro">Outro</h2>
 
-If you have anything to share, any questions, suggestions, or something that isn't working correctly, feel free to drop a comment in the comment section or reach out via Twitter at [@dimitryzub](https://twitter.com/DimitryZub), or [@serp_api](https://twitter.com/serp_api).
+If you have anything to share, any questions, suggestions, or something that isn't working correctly,reach out via Twitter at [@dimitryzub](https://twitter.com/DimitryZub), or [@serp_api](https://twitter.com/serp_api).
 
-Yours, Dmitriy, and the rest of SerpApi Team.
+Yours, 
+Dmitriy, and the rest of SerpApi Team.
 
 ___
 
 <p style="text-align: center;">Join us on <a href="https://www.reddit.com/r/SerpApi/">Reddit</a> | <a href="https://twitter.com/serp_api">Twitter</a> | <a href="https://www.youtube.com/channel/UCUgIHlYBOD3yA3yDIRhg_mg">YouTube</a></p>
 
-<p style="text-align: center;">Add a  <a href="https://forum.serpapi.com/feature-requests">Feature Request</a>💫 or a <a href="https://forum.serpapi.com/bugs">Bug</a>🐞</p>
-
+<p style="text-align: center;">Add a  <a href="https://github.com/serpapi/SerpApi/issues">Feature Request</a>💫 or a <a href="https://github.com/serpapi/SerpApi/issues">Bug</a>🐞</p>
