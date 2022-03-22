@@ -57,10 +57,8 @@ def scrape_all_profiles_from_university(label: str, university_name: str) -> lis
     return profile_results
 
 
-print(scrape_all_profiles_from_university(label="Deep_Learning", university_name="Harvard University"))
-
-
-# print(json.dumps(scrape_all_profiles_from_university(label="Deep_Learning", university_name="Harvard University"), indent=2))
+# print(scrape_all_profiles_from_university(label="Deep_Learning", university_name="Harvard University"))
+print(json.dumps(scrape_all_profiles_from_university(label="Deep_Learning", university_name="Harvard University"), indent=2))
 
 
 def serpapi_scrape_all_profiles_from_university(label: str, university_name: str) -> list[dict[str]]:
