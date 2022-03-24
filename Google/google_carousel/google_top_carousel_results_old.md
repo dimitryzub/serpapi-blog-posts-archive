@@ -1,5 +1,3 @@
-This blog post will show how to scrape the title, thumbnail, link, and extensions from Google Organic Carousel Results results using Python.
-
 - <a href="#intro">Intro</a>
     - <a href="#prerequisites">Prerequisites</a>
     - <a href="#imports">Imports</a>
@@ -17,6 +15,7 @@ This blog post is a continuation of Google's web scraping series. Here you'll se
 
 
 <h3 id="intro">Prerequisites</h3>
+
 ```python
 $ pip install requests
 $ pip install lxml 
@@ -24,11 +23,12 @@ $ pip install beautifulsoup4
 $ pip install google-search-results 
 ```
 
-Make sure you have a basic knowledge of libraries mentioned above (*except API*), since this blog post is *not exactly a tutorial for beginners*, so **be sure** you have a basic familiarity with them.
+Make sure you have a basic knowledge of the libraries mentioned above (*except API*), since this blog post is *not exactly a tutorial for beginners*, so **be sure** you have a basic familiarity with them.
 
-Also, make sure you have a basic understanding of  `CSS` selectors because of  `select()`/`select_one()` `beautifulsoup` methods which accepts `CSS` selectors.  [`CSS` selectors reference](https://www.w3schools.com/cssref/css_selectors.asp).
+Also, make sure you have a basic understanding of  `CSS` selectors because of  `select()`/`select_one()` `beautifulsoup` methods that accepts `CSS` selectors.  [`CSS` selectors reference](https://www.w3schools.com/cssref/css_selectors.asp).
 
 <h3 id="imports">Imports</h3>
+
 ```python
 from bs4 import BeautifulSoup
 import requests, lxml, re, json
@@ -41,6 +41,7 @@ from serpapi import GoogleSearch # API solution
 
 
 <h3 id="process">Process</h3>
+
 #### Thumbnail extraction
 Let's start with hardest part, thumbnails extraction. *If you don't need thumbnails, scroll down to other extraction parts.*
 
@@ -71,8 +72,10 @@ Then `data:image` URLs needs to decoded *in a loop*:
 for thumbnail in thumbnails:
     decoded_thumbnail = bytes(thumbnail, 'ascii').decode('unicode-escape')
 ```
+
 _____
 #### Title, link and extensions extraction
+
 ![image](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/3ar97qh46156j5bz0ezp.png)
 
 To parse title, link and extensions (*lightly grayed text*) we need to iterate over `ct5Ked` `CSS` selector using `for` loop and call specific data:
