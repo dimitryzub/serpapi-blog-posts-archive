@@ -6,7 +6,7 @@
 - <a href="#outro">Outro</a>
 
 
-<h3 id="intro">Prerequisites</h3>
+<h3 id="prerequisites">Prerequisites</h3>
 
 **Install libraries**:
 
@@ -184,12 +184,13 @@ for result, image in zip(selector.css('.QjXCXd.X8kvh'), decoded_thumbnails):
   extensions = result.css(".ellip.AqEFvb::text").getall()
 ```
 
-| Code                  | Explanation                                                                                                                                                                                                          |
-|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `::text`              | a `parsel` [pseudo-element to extract textual node data](https://github.com/scrapy/parsel/blob/f5f73d34ba787ad0c9df25de295de6e196ecd91d/parsel/csstranslator.py#L86-L88) which is identical to XPath `<node>/text()` |
-| `::attr(<attribute>)` | a `parsel` pseudo-element grab attribute data from the node which is identical to XPath `<node>/@href`                                                                                                               | 
-| `get()`               | to return [first element of actual data](https://github.com/scrapy/parsel/blob/f5f73d34ba787ad0c9df25de295de6e196ecd91d/parsel/selector.py#L193-L200).                                                               |
-| `getall()`             | to return [`list` of all matches](https://github.com/scrapy/parsel/blob/f5f73d34ba787ad0c9df25de295de6e196ecd91d/parsel/selector.py#L176-L181).                                                                      |
+| Code                                                                                                                        | Explanation                                                                                                                                  |
+|-----------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| [`zip()`](https://www.programiz.com/python-programming/methods/built-in/zip)                                                | allows to iterate over multiple iterables in a single `for` loop.                                                                            |
+| [`::text`](https://github.com/scrapy/parsel/blob/f5f73d34ba787ad0c9df25de295de6e196ecd91d/parsel/csstranslator.py#L86-L88)  | a `parsel` pseudo-element to extract textual node data which is identical to XPath `<node>/text()`                                           |
+| `::attr(<attribute>)`                                                                                                       | a `parsel` pseudo-element grab attribute data from the node which is identical to XPath `<node>/@href`                                       | 
+| [`get()`](https://github.com/scrapy/parsel/blob/f5f73d34ba787ad0c9df25de295de6e196ecd91d/parsel/selector.py#L193-L200)      | to return first element of actual data.                                                                                                      |
+| [`getall()`](https://github.com/scrapy/parsel/blob/f5f73d34ba787ad0c9df25de295de6e196ecd91d/parsel/selector.py#L176-L181)   | to return `list` of all matches. |
 
 Next step to check `if` extracted title, link and extensions has some values and append to temporary `list` and `print` the data:
 
@@ -212,9 +213,7 @@ ____
 
 ### Using [Google Top Carousel API](https://serpapi.com/direct-answer-box-api) from SerpApi
 
-
-SerpApi is a paid API with a free plan which allows end-user In other words, you don't need to think about things you don't want to think about, or figuring out how things work and then maintain it over time if something crashes since everything is already done for the end-user.
-
+SerpApi is a paid API with a free plan which allows end-user to forget about figuring out how to bypass blocks from search entities and focus on the which data to extract.
 
 ```python
 from serpapi import GoogleSearch
@@ -254,7 +253,7 @@ Part of the output:
 
 <h3 id="links">Links</h3>
 
-- [Code in the online IDE](https://replit.com/@DimitryZub1/Scrape-Google-Top-Carousel-Results-with-Python#bs4_result.py)
+- [Code in the online IDE](https://replit.com/@DimitryZub1/Scrape-Google-Top-Carousel-Results-with-Python#main.py)
 - [Google Top Carousel API](https://serpapi.com/top-carousel)
 
 <h3 id="outro">Outro</h3>
