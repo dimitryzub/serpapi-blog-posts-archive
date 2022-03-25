@@ -1,7 +1,7 @@
 - <a href="#prerequisites">Prerequisites</a>
 - <a href="#what_will_be_scraped">What will be scraped</a>
-    - <a href="#full_code">Full Code</a>
-    - <a href="#code_explanation">Code Explanation</a>
+  - <a href="#full_code">Full Code</a>
+  - <a href="#code_explanation">Code Explanation</a>
 - <a href="#links">Links</a>
 - <a href="#outro">Outro</a>
 
@@ -19,8 +19,7 @@ pip install requests parsel google-search-results
 CSS selectors declare which part of the markup a style applies to thus allowing to extract data from matching tags and attributes.
 
 If you haven't scraped with CSS selectors, there's a dedicated blog post of mine
-about [how to use CSS selectors when web-scraping](https://serpapi.com/blog/web-scraping-with-css-selectors-using-python/) that covers
-what it is, pros and cons, and why they're matter from a web-scraping perspective.
+about [how to use CSS selectors when web-scraping](https://serpapi.com/blog/web-scraping-with-css-selectors-using-python/) that covers what it is, pros and cons, and why they're matter from a web-scraping perspective.
 
 <h3 id="what_will_be_scraped">What will be scraped</h3>
 
@@ -87,7 +86,7 @@ def parsel_get_top_carousel():
 parsel_get_top_carousel()
 ```
 
-Output: 
+Output:
 
 ```json
 {
@@ -192,7 +191,7 @@ for result, image in zip(selector.css('.QjXCXd.X8kvh'), decoded_thumbnails):
 | [`get()`](https://github.com/scrapy/parsel/blob/f5f73d34ba787ad0c9df25de295de6e196ecd91d/parsel/selector.py#L193-L200)      | to return first element of actual data.                                                                                                      |
 | [`getall()`](https://github.com/scrapy/parsel/blob/f5f73d34ba787ad0c9df25de295de6e196ecd91d/parsel/selector.py#L176-L181)   | to return `list` of all matches. |
 
-Next step to check `if` extracted title, link and extensions has some values and append to temporary `list` and `print` the data:
+The next step is to check `if` extracted title, link and extensions have some values and append to temporary `list` and `print` the data:
 
 ```python
 data = {f"{carousel_name}": []}
@@ -211,7 +210,7 @@ print(json.dumps(data, indent=2, ensure_ascii=False))
 ____
 
 
-### Using [Google Top Carousel API](https://serpapi.com/direct-answer-box-api) from SerpApi
+### Using [Google Top Carousel API](https://serpapi.com/top-carousel) from SerpApi
 
 SerpApi is a paid API with a free plan which allows end-user to forget about figuring out how to bypass blocks from search entities and focus on the which data to extract.
 
@@ -221,6 +220,7 @@ import os, json
 
 def serpapi_get_top_carousel():
     params = {
+      # https://docs.python.org/3/library/os.html#os.getenv
       "api_key": os.getenv("API_KEY"), # your SerpApi key in the environment variable
       "engine": "google",              # search engine
       "q": "dune actors",              # search query
