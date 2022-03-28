@@ -10,7 +10,9 @@ ___
 
 Title, link, thumbnail, origin, views, date published, channel from all results.
 
-![image](https://user-images.githubusercontent.com/78694043/156034455-8e856fc7-ad42-433d-b488-1c3d2a14a0c3.png)
+<p align="center">
+  <img src="https://media.giphy.com/media/BlHRFXFMzai8ZTUKJl/giphy.gif" alt="animated_gif" />
+</p>
 
 📌Note: Naver Search does not provide more than 600 video search results for the best search result quality: "*네이버 검색은 최상의 검색결과 품질을 위해 600건 이상의 동영상 검색결과를 제공하지 않습니다*", this is what you'll see when you hit the bottom of the search results. 
 
@@ -29,16 +31,15 @@ Testing CSS selector in the console:
 
 **Basic knowledge scraping with CSS selectors**
 
-If you haven't scraped with CSS selectors, there's a dedicated blog post of mine about [how to use CSS selectors when web-scraping](https://serpapi.com/blog/web-scraping-with-css-selectors-using-python/) that covers what it is, pros and cons, and why they're matter from a web-scraping perspective.
-
 CSS selectors declare which part of the markup a style applies to thus allowing to extract data from matching tags and attributes.
+
+If you haven't scraped with CSS selectors, there's a dedicated blog post of mine about [how to use CSS selectors when web-scraping](https://serpapi.com/blog/web-scraping-with-css-selectors-using-python/) that covers what it is, pros and cons, and why they're matter from a web-scraping perspective.
 
 **Separate virtual environment**
 
 If you didn't work with a virtual environment before, have a look at the dedicated [Python virtual environments tutorial using Virtualenv and Poetry](https://serpapi.com/blog/python-virtual-environments-using-virtualenv-and-poetry/) blog post of mine to get familiar.
 
-In short, it's a thing that creates an independent set of installed libraries including different Python versions that can coexist with each
-other at the same system thus preventing libraries or Python version conflicts.
+In short, it's a thing that creates an independent set of installed libraries including different Python versions that can coexist with each other at the same system thus preventing libraries or Python version conflicts.
 
 📌Note: this is not a strict requirement for this blog post.
 
@@ -52,10 +53,14 @@ pip install requests, parsel, playwright
 
 This section is split into two parts:
 
-- <a href="#first_part">parse data <i>without</i> browser automation</a> using [`requests`](https://requests.readthedocs.io/en/master/user/quickstart/) and [`parsel`](https://parsel.readthedocs.io/en/latest/index.html) which is a [`bs4`](https://www.crummy.com/software/BeautifulSoup/bs4/doc/) analog that supports Xpath.
-- <a href="#second_part">parse data <i>with</i> browser automation</a> using [`playwright`](https://playwright.dev/python/docs/intro#usage), which is a modern [`selenium`](https://www.selenium.dev/documentation/webdriver/getting_started/first_script/) analog.
+| Method                                                                 | Used libraries |
+|------------------------------------------------------------------------|----------------|
+| <a href="#first_part">parse data <i>without</i> browser automation</a> | [`requests`](https://requests.readthedocs.io/en/master/user/quickstart/) and [`parsel`](https://parsel.readthedocs.io/en/latest/index.html) which is a [`bs4`](https://www.crummy.com/software/BeautifulSoup/bs4/doc/) analog that supports Xpath.               |
+| <a href="#second_part">parse data <i>with</i> browser automation</a>   | [`playwright`](https://playwright.dev/python/docs/intro#usage), which is a modern [`selenium`](https://www.selenium.dev/documentation/webdriver/getting_started/first_script/) analog.               |
 
-<h4 id="first_part">Scrape all Naver Video Results Without Browser Automation</h4> 
+
+<h4 id="first_part">Scrape all Naver Video Results without Browser Automation</h4>
+
 
 ```python
 import requests, json
@@ -147,7 +152,10 @@ json_data = json.loads(html.text.replace("( {", "{").replace("]})", "]}"))
 html_data = json_data["aData"]
 ```
 
-- [`timeout=30`](https://2.python-requests.org/en/master/user/quickstart/#timeouts) is a `requests` argument that will stop waiting for response after 30 seconds.
+| Code                                                                               | Explanation                                  |
+|------------------------------------------------------------------------------------|----------------------------------------------|
+| [`timeout=30`](https://2.python-requests.org/en/master/user/quickstart/#timeouts)  | to stop waiting for a response after 30 sec. | 
+
 
 Returned JSON data from `json_data`:
 
@@ -193,10 +201,12 @@ while params["start"] <= int(json_data["maxCount"]):
         html_data = json.loads(html.text.replace("( {", "{").replace("]})", "]}"))["aData"]
 ``` 
 
-- `while params["start"] <= int(json_data["maxCount"])` will be iterating until it will hit 1000 video results, which is a hard limit of `["maxCount"]`.
-- `xpath("normalize-space()")` is used to get blank text nodes since `parsel` [translates every CSS query to XPath](https://github.com/scrapy/parsel/blob/f5f73d34ba787ad0c9df25de295de6e196ecd91d/parsel/selector.py#L350-L351), and [because XPath's `text()` ignores blank text nodes](https://github.com/scrapy/parsel/issues/62#issuecomment-1042309376) and gets first text element. If not used, it will skip `<mark>` element (highlighted in yellow on the picture above).
-- `::text` or `::attr(href)` is a `parsel` own CSS pseudo-elements support which extracts text or attributes accordingly.
-- `params["start"] += 48` to increment to next page results: `48, 96, 144, 192, 240, 288, 336, 384, 432, 480, 528, 576, 624...`
+| Code                                                  | Explanation                                                                                                                                                                                                                                                                                                                                       |
+|-------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `while params["start"] <= int(json_data["maxCount"])` | iterate until hits 1000 results which is a hard limit of `["maxCount"]`                                                                                                                                                                                                                                                                           |
+| `xpath("normalize-space()")`                          | to get blank text nodes since `parsel` [translates every CSS query to XPath](https://github.com/scrapy/parsel/blob/f5f73d34ba787ad0c9df25de295de6e196ecd91d/parsel/selector.py#L350-L351), and [because XPath's `text()` ignores blank text nodes](https://github.com/scrapy/parsel/issues/62#issuecomment-1042309376) and gets first text element. |
+| `::text` or `::attr(href)`                            | `parsel` own CSS pseudo-elements support which extracts text or attributes accordingly.                                                                                                                                                                                                                                                           |
+| `params["start"] += 48`                               | to increment to next page results: `48, 96, 144, 192 ... |
 
 Output:
 
@@ -314,7 +324,9 @@ while not_reached_end:
         not_reached_end = False
 ```
 
-- [`page.evaluate()`](https://playwright.dev/python/docs/api/class-page#page-evaluate) let's run JavaScript expressions. You can also use `playwright` [keyboard keys and shortcuts](https://playwright.dev/python/docs/input#keys-and-shortcuts) to do the same thing.
+| Code                                                                                  | Explanation                                                                                                                                                                   |
+|---------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`page.evaluate()`](https://playwright.dev/python/docs/api/class-page#page-evaluate)  | to run JavaScript expressions. You can also use `playwright` [keyboard keys and shortcuts](https://playwright.dev/python/docs/input#keys-and-shortcuts) to do the same thing  | 
 
 Iterate over scrolled results and `append` to temporary `list`:
 
@@ -347,9 +359,12 @@ for index, video in enumerate(page.query_selector_all(".video_bx"), start=1):
     })
 ```
 
-- [`enumerate()`](https://www.programiz.com/python-programming/methods/built-in/enumerate) is used to get index position of each video, which adds a counter to an iterable and return it. `start=1` argument will start counting from 1, instead of 0.
-- [`query_selector_all()`](https://playwright.dev/python/docs/api/class-page#page-query-selector-all) returns a `list` of matches. If nothing to return: `[]`
-- [`query_selector()`](https://playwright.dev/python/docs/api/class-page#page-query-selector) returns a match. If nothing to return: `None`
+| Code                                                                                                | Explanation                                   |
+|-----------------------------------------------------------------------------------------------------|-----------------------------------------------|
+| [`enumerate()`](https://www.programiz.com/python-programming/methods/built-in/enumerate)            | to get index position of each video           |
+| [`query_selector_all()`](https://playwright.dev/python/docs/api/class-page#page-query-selector-all) | to return a `list` of matches. Default: `[]`  |
+| [`query_selector()`](https://playwright.dev/python/docs/api/class-page#page-query-selector)         | to return a single match. Default: `None`     | 
+
 
 Close browser instance after data has been extracted:
 
@@ -396,7 +411,7 @@ ___
 
 <h2 id="outro">Outro</h2>
 
-This blog post is for information purpose only. Use the received information for useful purposes, for example, if you know how to help improve Naver's service or something else. 
+This blog post is for information purpose only. Use the received information for useful purposes, for example, if you know how to help improve Naver's service. 
 
 If you have anything to share, any questions, suggestions, or something that isn't working correctly, reach out via Twitter at [@dimitryzub](https://twitter.com/DimitryZub), or [@serp_api](https://twitter.com/serp_api).
 
@@ -407,5 +422,5 @@ ___
 
 <p style="text-align: center;">Join us on <a href="https://www.reddit.com/r/SerpApi/">Reddit</a> | <a href="https://twitter.com/serp_api">Twitter</a> | <a href="https://www.youtube.com/channel/UCUgIHlYBOD3yA3yDIRhg_mg">YouTube</a></p>
 
-<p style="text-align: center;">Add a  <a href="https://forum.serpapi.com/feature-requests">Feature Request</a>💫 or a <a href="https://forum.serpapi.com/bugs">Bug</a>🐞</p>
+<p style="text-align: center;">Add a  <a href="https://github.com/serpapi/SerpApi/issues">Feature Request</a>💫 or a <a href="https://github.com/serpapi/SerpApi/issues">Bug</a>🐞</p>
 
