@@ -1,6 +1,4 @@
-import json
-
-import requests
+import requests, json
 from parsel import Selector
 from playwright.sync_api import sync_playwright
 
@@ -48,6 +46,8 @@ def playwright_scrape_all_naver_videos():
         print(json.dumps(video_results, indent=2, ensure_ascii=False))
 
         browser.close()
+
+# playwright_scrape_all_naver_videos()
 
 
 def parsel_scrape_all_video_results():
