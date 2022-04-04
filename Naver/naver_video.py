@@ -71,7 +71,8 @@ def serpapi_scrape_naver_videos():
 
     print(json.dumps(video_results, indent=2, ensure_ascii=False))
 
-    # for loop equivalent to map()
+
+    # for loop equivalent to map() ---> slower
     # videos = list(map(lambda video_result:
     #                   {"title": video_result["title"],
     #                    "link": video_result["link"],
@@ -88,4 +89,3 @@ def serpapi_scrape_naver_videos():
     # print(json.dumps(videos, indent=2, ensure_ascii=False))
 
 # serpapi_scrape_naver_videos()
-

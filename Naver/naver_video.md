@@ -45,17 +45,14 @@ ___
 ```python
 import requests, os, json
 from parsel import Selector
-from serpapi import GoogleSearch
 
 
 def parsel_scrape_naver_videos():
-    # https://docs.python-requests.org/en/master/user/quickstart/#passing-parameters-in-urls
     params = {
-        "query": "minecraft",
-        "where": "video"  # video results
+        "query": "minecraft",  # search query
+        "where": "video"       # video results
     }
 
-    # https://docs.python-requests.org/en/master/user/quickstart/#custom-headers
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.87 Safari/537.36",
     }
@@ -87,8 +84,60 @@ def parsel_scrape_naver_videos():
             "date_published": date_published
         })
     
-    # ensure_ascii=False to properly display Hangul characters
     print(json.dumps(video_results, indent=2, ensure_ascii=False))    
+```
+
+Pass search query parameters and request headers: 
+
+```python
+def parsel_scrape_naver_videos():
+    # https://docs.python-requests.org/en/master/user/quickstart/#passing-parameters-in-urls
+    params = {
+        "query": "minecraft",  # search query
+        "where": "video"       # video results
+    }
+
+    # https://docs.python-requests.org/en/master/user/quickstart/#custom-headers
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.87 Safari/537.36",
+    }
+```
+
+Pass URL parameters, request headers, make a request and pass returned HTML to `parsel`:
+
+```ptyhon
+html = requests.get("https://search.naver.com/search.naver", params=params, headers=headers, timeout=30)
+selector = Selector(html.text)  # very similar to bs4, except parsel supports Xpath 
+```
+
+Create temporary `list` to store the data and extract all data:
+
+```python
+video_results = []
+
+    # https://parsel.readthedocs.io/en/latest/usage.html#using-selectors
+    for video in selector.css(".video_bx"):
+        title = video.css(".text::text").get()
+        link = video.css(".info_title::attr(href)").get()
+        thumbnail = video.css(".thumb_area img::attr(src)").get()
+        channel = video.css(".channel::text").get()
+        origin = video.css(".origin::text").get()
+        video_duration = video.css(".time::text").get()
+        views = video.css(".desc_group .desc:nth-child(1)::text").get()
+        date_published = video.css(".desc_group .desc:nth-child(2)::text").get()
+```
+
+|Code|Explanation|
+|----|-----------|
+|[`::text` or `::attr(attribute)`](https://github.com/scrapy/parsel/blob/b479b1822b0a61452a341dc7806a1cc34278ba1c/parsel/csstranslator.py#L46-L49)|to extract text or attriubte value from the node.|
+|[`get()`](https://github.com/scrapy/parsel/blob/b479b1822b0a61452a341dc7806a1cc34278ba1c/parsel/selector.py#L193-L197)|to get actual data.|
+
+
+Print the data:
+
+```python
+# ensure_ascii=False to properly display Hangul characters
+print(json.dumps(video_results, indent=2, ensure_ascii=False)) 
 ```
 
 Part of returned data:
@@ -131,17 +180,18 @@ from serpapi import NaverSearch
 
 def serpapi_scrape_naver_videos():
     params = {
-        "api_key": os.getenv("API_KEY"),
-        "engine": "naver",
-        "query": "minecraft",
-        "where": "video"
+        "api_key": os.getenv("API_KEY"),  # your serpapi api key
+        "engine": "naver",                # parsing engine
+        "query": "minecraft",             # search query
+        "where": "video"                  # video results
     }
 
-    search = NaverSearch(params)
-    results = search.get_dict()
+    search = NaverSearch(params)          # where data extraction happens
+    results = search.get_dict()           # JSON -> Python dictionary
 
     video_results = []
 
+    # iterate over video results and extract desired data
     for video in results["video_results"]:
         video_results.append({
             "title": video["title"],
@@ -201,6 +251,6 @@ Yours, Dmitriy, and the rest of SerpApi Team.
 
 ___
 
-<p style="text-align: center;">Join us on <a href="https://www.reddit.com/r/SerpApi/">Reddit</a> | <a href="https://twitter.com/serp_api">Twitter</a> | <a href="https://www.youtube.com/channel/UCUgIHlYBOD3yA3yDIRhg_mg">YouTube</a></p>
+<p style="text-align: center;">Join us on <a href="https://twitter.com/serp_api">Twitter</a> | <a href="https://www.youtube.com/channel/UCUgIHlYBOD3yA3yDIRhg_mg">YouTube</a></p>
 
-<p style="text-align: center;">Add a  <a href="https://forum.serpapi.com/feature-requests">Feature Request</a>💫 or a <a href="https://forum.serpapi.com/bugs">Bug</a>🐞</p>
+<p style="text-align: center;">Add a  <a href="https://github.com/serpapi/public-roadmap/issues">Feature Request</a>💫 or a <a href="https://github.com/serpapi/public-roadmap/issues">Bug</a>🐞</p>
