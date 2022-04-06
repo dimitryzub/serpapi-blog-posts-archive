@@ -1,6 +1,5 @@
 - <a href="#what_will_be_scraped">What will be scraped</a>
 - <a href="#prerequisites">Prerequisites</a>
-- <a href="#process">Process</a>
 - <a href="#full_code">Full Code</a>
 - <a href="#links">Links</a>
 - <a href="#outro">Outro</a>
@@ -35,8 +34,7 @@ pip install requests, parsel
 
 **Reduce the chance of being blocked**
 
-There's a chance that a request might be blocked. Have a look at [how to reduce the chance of being blocked while web-scraping](https://serpapi.com/blog/how-to-reduce-chance-of-being-blocked-while-web/), there are eleven methods to bypass blocks from most websites and some of them will be covered in this blog post.
-
+There's a chance that a request might be blocked. Have a look at [how to reduce the chance of being blocked while web-scraping](https://serpapi.com/blog/how-to-reduce-chance-of-being-blocked-while-web/), there are eleven methods to bypass blocks from most websites.
 
 ___
 
@@ -44,12 +42,12 @@ ___
 
 ```python
 import requests, json
-from parsel import Selector
+from parsel import Selector  # https://parsel.readthedocs.io/
 
 # https://docs.python-requests.org/en/master/user/quickstart/#passing-parameters-in-urls
 params = {
-    "query": "minecraft",
-    "where": "web"  # works with nexearch as well
+    "query": "minecraft",  # search query
+    "where": "web"         # web results. works with nexearch as well
 }
 
 # https://docs.python-requests.org/en/master/user/quickstart/#custom-headers
@@ -62,12 +60,13 @@ selector = Selector(html.text)
 
 related_results = []
 
+# https://www.programiz.com/python-programming/methods/built-in/enumerate
 for index, related_result in enumerate(selector.css(".related_srch .keyword"), start=1):
     keyword = related_result.css(".tit::text").get().strip()
     link = f'https://search.naver.com/search.naver{related_result.css("a::attr(href)").get()}'
 
     related_results.append({
-        "position": index,
+        "position": index,    # 1,2,3..
         "title": keyword,
         "link": link
     })
@@ -113,24 +112,26 @@ ___
 
 Alternatively, you can achieve the same by using [Naver Related results API](https://serpapi.com/naver-related-results) from SerpApi. It is a paid API with a free plan.
 
-It's almost the same, except you don't need to create the parser from scratch, figure out which proxy/CAPTCHA providers is reliable, how to scale it, and don't need to maintain it if something is broken.
+It's almost the same, except you don't need to create the parser from scratch, maintain it, how to bypass blocks from Naver or [other search engines](https://serpapi.com/search-api), figure out which proxy/CAPTCHA providers is reliable, how to scale it.
 
 ```python
 from serpapi import NaverSearch
 import os, json
 
 params = {
-    "api_key": os.getenv("API_KEY"),
-    "engine": "naver",
-    "query": "minecraft",
-    "where": "web"
+    # https://docs.python.org/3/library/os.html#os.getenv
+    "api_key": os.getenv("API_KEY"),  # your serpapi api key
+    "engine": "naver",                # search engine to parse results from
+    "query": "minecraft",             # search query
+    "where": "web"                    # web results
 }
 
-search = NaverSearch(params)
-results = search.get_dict()
+search = NaverSearch(params)          # where data extraction happens
+results = search.get_dict()           # JSON -> Python dictionary
 
 related_results = []
 
+# iterate over "related_results" and extract position, title and link
 for related_result in results["related_results"]:
     related_results.append({
         "position": related_result["position"],
@@ -184,15 +185,14 @@ ___
 
 <h2 id="outro">Outro</h2>
 
-If you have anything to share, any questions, suggestions, or something that isn't working correctly, feel free to drop a comment in the
-comment section or reach out via Twitter at [@dimitryzub](https://twitter.com/DimitryZub), or [@serp_api](https://twitter.com/serp_api).
+If you have anything to share, any questions, suggestions, or something that isn't working correctly, reach out via Twitter at [@dimitryzub](https://twitter.com/DimitryZub), or [@serp_api](https://twitter.com/serp_api).
 
 Yours, 
 Dmitriy, and the rest of SerpApi Team.
 
 ___
 
-<p style="text-align: center;">Join us on <a href="https://www.reddit.com/r/SerpApi/">Reddit</a> | <a href="https://twitter.com/serp_api">Twitter</a> | <a href="https://www.youtube.com/channel/UCUgIHlYBOD3yA3yDIRhg_mg">YouTube</a></p>
+<p style="text-align: center;">Join us on  <a href="https://twitter.com/serp_api">Twitter</a> | <a href="https://www.youtube.com/channel/UCUgIHlYBOD3yA3yDIRhg_mg">YouTube</a></p>
 
-<p style="text-align: center;">Add a  <a href="https://forum.serpapi.com/feature-requests">Feature Request</a>💫 or a <a href="https://forum.serpapi.com/bugs">Bug</a>🐞</p>
+<p style="text-align: center;">Add a  <a href="https://github.com/serpapi/public-roadmap/issues">Feature Request</a>💫 or a <a href="https://github.com/serpapi/public-roadmap/issues">Bug</a>🐞</p>
 
