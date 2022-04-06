@@ -422,5 +422,5 @@ ___
 
 <p style="text-align: center;">Join us on <a href="https://www.reddit.com/r/SerpApi/">Reddit</a> | <a href="https://twitter.com/serp_api">Twitter</a> | <a href="https://www.youtube.com/channel/UCUgIHlYBOD3yA3yDIRhg_mg">YouTube</a></p>
 
-<p style="text-align: center;">Add a  <a href="https://github.com/serpapi/SerpApi/issues">Feature Request</a>💫 or a <a href="https://github.com/serpapi/SerpApi/issues">Bug</a>🐞</p>
+<p style="text-align: center;">Add a  <a href="https://github.com/serpapi/public-roadmap">Feature Request</a>💫 or a <a href="https://github.com/serpapi/public-roadmap">Bug</a>🐞</p>
 
