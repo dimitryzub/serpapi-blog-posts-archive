@@ -1,4 +1,5 @@
 - <a href="#what_will_be_scraped">What will be scraped</a>
+- <a href="#filter_results">How to filtering works</a>
 - <a href="#prerequisites">Prerequisites</a>
 - <a href="#full_code">Full Code</a>
 - <a href="#links">Links</a>
@@ -9,6 +10,14 @@
 <h2 id="what_will_be_scraped">What will be scraped</h2>
 
 ![image](https://user-images.githubusercontent.com/78694043/165787899-987bfd3b-3fac-401f-9075-b7c998b05ac0.png)
+
+<h2 id="filter_results">How filtering works</h2>
+
+By using `source:` operator which restricts search results to documents published by sources containing "NIPS" in their name. This operator can be used in addition to `OR` operator i.e `source:NIPS OR source:"Neural Information"` 
+
+```
+search terms source:NIPS OR source:"Neural Information"
+```
 
 <h2 id="prerequisites">Prerequisites</h2>
 
