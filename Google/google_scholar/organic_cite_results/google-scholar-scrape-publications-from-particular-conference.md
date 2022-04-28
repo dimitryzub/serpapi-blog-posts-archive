@@ -13,7 +13,9 @@
 
 <h2 id="filter_results">How filtering works</h2>
 
-By using `source:` operator which restricts search results to documents published by sources containing "NIPS" in their name. This operator can be used in addition to `OR` operator i.e `source:NIPS OR source:"Neural Information"` 
+By using `source:` operator which restricts search results to documents published by sources containing "NIPS" in their name. 
+
+This operator can be used in addition to `OR` operator i.e `source:NIPS OR source:"Neural Information"` 
 
 ```
 search terms source:NIPS OR source:"Neural Information"
