@@ -28,6 +28,9 @@ def scrape_google_finance(ticker: str):
     html = requests.get(f"https://www.google.com/finance/quote/{ticker}", params=params, headers=headers, timeout=30)
     selector = Selector(text=html.text)
     
+    # was trying to scrape % change of the price: up by 21%/down by 2%
+    # print(selector.css("[jsname=Fe7oBc]").get())
+    
     # where all extracted data will be temporary located
     ticker_data = {
         "ticker_data": {},
@@ -39,9 +42,17 @@ def scrape_google_finance(ticker: str):
     }
     
     # current price, quote, title extraction
-    ticker_data["ticker_data"]["current_price"] = selector.css(".AHmHk .fxKbKc::text").get()
     ticker_data["ticker_data"]["quote"] = selector.css(".PdOqHc::text").get().replace(" • ",":")
     ticker_data["ticker_data"]["title"] = selector.css(".zzDege::text").get()
+    ticker_data["ticker_data"]["current_price"] = selector.css(".AHmHk .fxKbKc::text").get()
+    ticker_data["ticker_data"]["after_hours_price"] = selector.css(".DnMTof .fxKbKc::text").get()
+    ticker_data["ticker_data"]["after_hours_price_change"] = selector.css(".dHlEwc+ .tO2BSb .DnMTof::text").get()
+    ticker_data["ticker_data"]["after_hours_price_percent_change"] = selector.css(".JwB6zf.DnMTof::text").get()
+    ticker_data["ticker_data"]["price_change"] = selector.css(".NydbP.nZQ6l.tnNmPe::attr(aria-label)").get()
+    ticker_data["ticker_data"]["closed_at"] = selector.css("[jsname=Vebqub]::text").get()
+    # 0.65% or 0.0021% or 1201.12123%
+    # https://regex101.com/r/8R84Vw/1
+    ticker_data["ticker_data"]["price_change_formatted"] = re.search(r"\d{0,100}\.\d{0,100}%", selector.css("[jsname=Fe7oBc]::attr(aria-label)").get()).group()
     
     # about panel extraction
     about_panel_keys = selector.css(".gyFHrc .mfs7Fc::text").getall()
@@ -119,7 +130,7 @@ def scrape_google_finance(ticker: str):
         ticker_data["people_also_search_for"]["error"] = f"No 'people_also_search_for` in results for {ticker}"
         
 
-    return ticker_data
+    # return ticker_data
 
 
 def discover_more_tickers(index: int, other_data: str):
@@ -143,7 +154,8 @@ def discover_more_tickers(index: int, other_data: str):
     
 
 data = scrape_google_finance(ticker="GOOGL:NASDAQ")
-print(json.dumps(data, indent=2, ensure_ascii=False))
+print(data)
+# print(json.dumps(data, indent=2, ensure_ascii=False))
 
 # iterate over multiple tickers
 # for ticker in ["DAX:INDEXDB", "GOOGL:NASDAQ", "MSFT:NASDAQ"]:
