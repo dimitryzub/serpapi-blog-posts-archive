@@ -4,17 +4,16 @@ import requests, json, os
 
 def scrape_conference_publications(query: str, source: list[str]):
     if source:
-
         sources = " OR ".join([f'source:{item}' for item in source]) # source:NIPS OR source:Neural Information
             
-        # # https://docs.python-requests.org/en/master/user/quickstart/#passing-parameters-in-urls
+        # https://docs.python-requests.org/en/master/user/quickstart/#passing-parameters-in-urls
         params = {
             "q": f'{query.lower()} {sources}',  # search query
             "hl": "en",                         # language of the search
             "gl": "us"                          # country of the search
         }
 
-        # # https://docs.python-requests.org/en/master/user/quickstart/#custom-headers
+        # https://docs.python-requests.org/en/master/user/quickstart/#custom-headers
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36"
         }
@@ -50,7 +49,10 @@ def scrape_conference_publications(query: str, source: list[str]):
                     "link": pdf_file_link
                 }
             })
-            
+         
+        # return publications
+    
         print(json.dumps(publications, indent=2, ensure_ascii=False))
+    
 
 scrape_conference_publications(query="anatomy", source=["NIPS", "Neural Information"])
