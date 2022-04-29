@@ -13,9 +13,9 @@
 
 <h2 id="filter_results">How filtering works</h2>
 
-By using `source:` operator which restricts search results to documents published by sources containing "NIPS" in their name. 
+To filter results, you need to use  `source:` operator which restricts search results to documents published by sources containing `"NIPS"` in their name. 
 
-This operator can be used in addition to `OR` operator i.e `source:NIPS OR source:"Neural Information"` 
+This operator can be used in addition to `OR` operator i.e `source:NIPS OR source:"Neural Information"`. So the the search query would become:
 
 ```
 search terms source:NIPS OR source:"Neural Information"
@@ -59,16 +59,18 @@ import requests, json, os
 
 def scrape_conference_publications(query: str, source: list[str]):
     if source:
-        sources = " OR ".join([f'source:{item}' for item in source]) # source:NIPS OR source:Neural Information
+
+        # source:NIPS OR source:Neural Information
+        sources = " OR ".join([f'source:{item}' for item in source]) 
             
-        # # https://docs.python-requests.org/en/master/user/quickstart/#passing-parameters-in-urls
+        # https://docs.python-requests.org/en/master/user/quickstart/#passing-parameters-in-urls
         params = {
             "q": f'{query.lower()} {sources}',  # search query
             "hl": "en",                         # language of the search
             "gl": "us"                          # country of the search
         }
 
-        # # https://docs.python-requests.org/en/master/user/quickstart/#custom-headers
+        # https://docs.python-requests.org/en/master/user/quickstart/#custom-headers
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36"
         }
@@ -173,17 +175,17 @@ Create a temporary `list` to store the data, and iterate over organic results:
 ```python
 publications = []
         
-    for result in selector.css(".gs_r.gs_scl"):
-        title = result.css(".gs_rt").xpath("normalize-space()").get()
-        link = result.css(".gs_rt a::attr(href)").get()
-        result_id = result.attrib["data-cid"]
-        snippet = result.css(".gs_rs::text").get()
-        publication_info = result.css(".gs_a").xpath("normalize-space()").get()
-        cite_by_link = f'https://scholar.google.com/scholar{result.css(".gs_or_btn.gs_nph+ a::attr(href)").get()}'
-        all_versions_link = f'https://scholar.google.com/scholar{result.css("a~ a+ .gs_nph::attr(href)").get()}'
-        related_articles_link = f'https://scholar.google.com/scholar{result.css("a:nth-child(4)::attr(href)").get()}'
-        pdf_file_title = result.css(".gs_or_ggsm a").xpath("normalize-space()").get()
-        pdf_file_link = result.css(".gs_or_ggsm a::attr(href)").get()
+for result in selector.css(".gs_r.gs_scl"):
+    title = result.css(".gs_rt").xpath("normalize-space()").get()
+    link = result.css(".gs_rt a::attr(href)").get()
+    result_id = result.attrib["data-cid"]
+    snippet = result.css(".gs_rs::text").get()
+    publication_info = result.css(".gs_a").xpath("normalize-space()").get()
+    cite_by_link = f'https://scholar.google.com/scholar{result.css(".gs_or_btn.gs_nph+ a::attr(href)").get()}'
+    all_versions_link = f'https://scholar.google.com/scholar{result.css("a~ a+ .gs_nph::attr(href)").get()}'
+    related_articles_link = f'https://scholar.google.com/scholar{result.css("a:nth-child(4)::attr(href)").get()}'
+    pdf_file_title = result.css(".gs_or_ggsm a").xpath("normalize-space()").get()
+    pdf_file_link = result.css(".gs_or_ggsm a::attr(href)").get()
 ```
 
 |Code|Explanation|
@@ -249,6 +251,8 @@ The biggest difference is that you don't need to create a parser from scratch, m
 
 
 ```python
+# pip install google-search-results
+
 import os, json
 from serpapi import GoogleSearch
 from urllib.parse import urlsplit, parse_qsl
