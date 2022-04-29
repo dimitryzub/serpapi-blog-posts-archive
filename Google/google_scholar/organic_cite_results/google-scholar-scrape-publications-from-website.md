@@ -23,14 +23,14 @@ search terms site:cabdirect.org OR site:<other_website>
 
 **Basic knowledge scraping with CSS selectors**
 
-CSS selectors declare which part of the markup a style applies to thus allowing to extract data from matching tags and attributes.
+CSS selectors declare which part of the markup a style applies to thus allowing to extract of data from matching tags and attributes.
 
 If you haven't scraped with CSS selectors, there's a dedicated blog post of mine about [how to use CSS selectors when web-scraping](https://serpapi.com/blog/web-scraping-with-css-selectors-using-python/) that covers what it is, pros and cons, and why they're matter from a web-scraping perspective and show the most common approaches of using CSS selectors when web scraping.
 
 
 **Separate virtual environment**
 
-In short, it's a thing that creates an independent set of installed libraries including different Python versions that can coexist with each other at the same system thus prevention libraries or Python version conflicts.
+In short, it's a thing that creates an independent set of installed libraries including different Python versions that can coexist with each other in the same system thus preventing libraries or Python version conflicts.
 
 If you didn't work with a virtual environment before, have a look at the dedicated [Python virtual environments tutorial using Virtualenv and Poetry](https://serpapi.com/blog/python-virtual-environments-using-virtualenv-and-poetry/) blog post of mine to get familiar.
 
@@ -142,12 +142,12 @@ selector = Selector(html.text)
 |Code|Explanation|
 |----|-----------|
 |`params`|is a query parameters that passed to `requests.get()` as a `dict`|
-|`haeders`|is a request headers, and `user-agent` is a thing that used to act as a "real" user visit so websites (not all and in all cases) don't block the request. We need to pass our `user-agent` because the [default `requests` `user-agent` is `python-requests`]() so websites understand that it's a script.|
+|`haeders`|is request headers, and `user-agent` is a thing that is used to act as a "real" user visit so websites (not all and in all cases) don't block the request. We need to pass our `user-agent` because the [default `requests` `user-agent` is `python-requests`]() so websites understand that it's a script.|
 |[`timeout`](https://docs.python-requests.org/en/master/user/quickstart/#timeouts)|to tell requests to stop waiting for a response after 30 seconds.|
 
 
 
-Create a temporary `list`, iterate over all organic results and extract the data:
+Create a temporary `list`, iterate over all organic results, and extract the data:
 
 ```python
 publications = []
@@ -213,13 +213,80 @@ Outputs:
 ]
 ```
 
+_____
+
+Alternatively, you can do the same thing using [Google Scholar Organic Results API](https://serpapi.com/google-scholar-organic-results) from SerpApi. It's a paid API with a free plan.
+
+The difference is that you don't have to create the parser from scratch, maintain it, figure out how to scale it, how bypass blocks from Google, and figure out which proxy/captcha providers are good.
+
+
+```python
+# pip install google-search-results
+
+import os, json
+from serpapi import GoogleSearch
+from urllib.parse import urlsplit, parse_qsl
+
+
+def serpapi_scrape(query: str, website: str):
+    params = {
+        # https://docs.python.org/3/library/os.html#os.getenv
+        "api_key": os.getenv("API_KEY"), # your serpapi API key
+        "engine": "google_scholar",      # search engine
+        "q": f"{query} site:{website}",  # search query
+        "hl": "en",                      # language
+        # "as_ylo": "2017",              # from 2017
+        # "as_yhi": "2021",              # to 2021
+        "start": "0"                     # first page
+    }
+    
+    search = GoogleSearch(params)
+    
+    publications = []
+    
+    publications_is_present = True
+    while publications_is_present:
+        results = search.get_dict()
+    
+        print(f"Currently extracting page #{results.get('serpapi_pagination', {}).get('current')}..")
+    
+        for result in results["organic_results"]:
+            position = result["position"]
+            title = result["title"]
+            publication_info_summary = result["publication_info"]["summary"]
+            result_id = result["result_id"]
+            link = result.get("link")
+            result_type = result.get("type")
+            snippet = result.get("snippet")
+    
+            publications.append({
+                "page_number": results.get("serpapi_pagination", {}).get("current"),
+                "position": position + 1,
+                "result_type": result_type,
+                "title": title,
+                "link": link,
+                "result_id": result_id,
+                "publication_info_summary": publication_info_summary,
+                "snippet": snippet,
+                })
+    
+            
+            if "next" in results.get("serpapi_pagination", {}):
+                # splits URL in parts as a dict and passes it to a GoogleSearch() class.
+                search.params_dict.update(dict(parse_qsl(urlsplit(results["serpapi_pagination"]["next"]).query)))
+            else:
+                papers_is_present = False
+    
+    print(json.dumps(organic_results_data, indent=2, ensure_ascii=False))
+```
+
 ___
 
 
 <h2 id="links">Links</h2>
 
-- [Code in the onlie IDE]()
-- [GitHub Repository]()
+- [Code in the onlie IDE](https://replit.com/@DimitryZub1/Scrape-Google-Scholar-Papers-from-a-certain-website#serpapi_solution.py)
+- [Google Scholar Organic Results API](https://serpapi.com/google-scholar-organic-results)
 
 ___
 
