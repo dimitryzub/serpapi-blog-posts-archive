@@ -15,7 +15,7 @@
 
 To filter results, you need to use  `source:` operator which restricts search results to documents published by sources containing `"NIPS"` in their name. 
 
-This operator can be used in addition to `OR` operator i.e `source:NIPS OR source:"Neural Information"`. So the the search query would become:
+This operator can be used in addition to `OR` operator i.e `source:NIPS OR source:"Neural Information"`. So the search query would become:
 
 ```
 search terms source:NIPS OR source:"Neural Information"
@@ -132,7 +132,7 @@ def scrape_conference_publications(query: str, source: list[str]):
 |`source: list[str]`|tells Python that `source` argument should be a `list` of `strings`.|
 
 
-Check if the source is available and transform the recieved `source` argument:
+Check if the source is available and transform the received `source` argument:
 
 ```python
 if source:
@@ -191,7 +191,7 @@ for result in selector.css(".gs_r.gs_scl"):
 |Code|Explanation|
 |----|-----------|
 |`css(<selector>)`|[to extarct data from a given CSS selector](https://github.com/scrapy/parsel/blob/90397dcd0b2c1cbb91e44f65c50f9e11628ba028/parsel/selector.py#L351-L362). In the background `parsel` translates every CSS query into XPath query using `cssselect`.|
-|`xpath("normalize-space()")`|[to get blank text nodes as well](https://github.com/scrapy/parsel/issues/62#issuecomment-1042309376). By default, blank text nodes will be skippet resulting not a complete output.|
+|`xpath("normalize-space()")`|[to get blank text nodes as well](https://github.com/scrapy/parsel/issues/62#issuecomment-1042309376). By default, blank text nodes will be skipped resulting not a complete output.|
 |`::text`/`::attr()`|is a [`parsel` pseudo-elements to extract text or attribute](https://github.com/scrapy/parsel/blob/90397dcd0b2c1cbb91e44f65c50f9e11628ba028/parsel/csstranslator.py#L48-L51) data from the HTML node.|
 |`get()`|to get actual data.|
 
