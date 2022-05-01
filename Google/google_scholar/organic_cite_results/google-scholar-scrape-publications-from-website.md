@@ -39,7 +39,7 @@ If you didn't work with a virtual environment before, have a look at the dedicat
 **Install libraries**:
 
 ```lang-none
-pip install requests lxml beautifulsoup4
+pip install requests parsel
 ```
 
 **Reduce the chance of being blocked**
@@ -56,12 +56,29 @@ from parsel import Selector
 import requests, json, os
 
 
-def scrape_website_publications(query: str, website: str):
+def check_websites(website: list or str):
+    if isinstance(website, str):
+        return website                                           # cabdirect.org
+    elif isinstance(website, list):
+        return " OR ".join([f'site:{site}' for site in website]) # site:cabdirect.org OR site:cab.net
+
+
+def scrape_website_publications(query: str, website: list or str):
+
+    """
+    Add a search query and site or multiple websites.
+
+    Following will work:
+    ["cabdirect.org", "lololo.com", "brabus.org"] -> list[str]
+    ["cabdirect.org"]                             -> list[str]
+    "cabdirect.org"                               -> str
+    """
+    
     # https://docs.python-requests.org/en/master/user/quickstart/#passing-parameters-in-urls
     params = {
-        "q": f'{query.lower()} site:{website}',  # search query
-        "hl": "en",                              # language of the search
-        "gl": "us"                               # country of the search
+        "q": f'{query.lower()} {check_websites(website=website)}',  # search query
+        "hl": "en",                                                 # language of the search
+        "gl": "us"                                                  # country of the search
     }
     
     # https://docs.python-requests.org/en/master/user/quickstart/#custom-headers
@@ -110,15 +127,30 @@ Import libraries and define a function:
 ```python
 from parsel import Selector
 import requests, json, os
+```
 
+Create a functuion to check if `website` argument is either a `list` of `str` or a `string`: 
 
-def scrape_website_publications(query: str, website: str):
+```python
+# check if returned website argument is string or a list
+
+def check_websites(website: list or str):
+    if isinstance(website, str):
+        return website                                           # cabdirect.org
+    elif isinstance(website, list):
+        return " OR ".join([f'site:{site}' for site in website]) # site:cabdirect.org OR site:cab.com
+```
+
+Define a parse function:
+
+```python
+def scrape_website_publications(query: str, website: list or str):
     # further code
 ```
 
 |Code|Explanation|
 |----|-----------|
-|`query: str`/`website: str`|to tell Python that `query` and `website` arguments should be with a type of `string`|
+|`query: str`/`website: list or str`|to tell Python that `query` and `website` arguments should be with a type of `list` of `strings` or a `string`|
 
 Create search query parameters, request headers, pass them to request:
 
@@ -285,7 +317,7 @@ ___
 
 <h2 id="links">Links</h2>
 
-- [Code in the onlie IDE](https://replit.com/@DimitryZub1/Scrape-Google-Scholar-Papers-from-a-certain-website#serpapi_solution.py)
+- [Code in the online IDE](https://replit.com/@DimitryZub1/Scrape-Google-Scholar-Papers-from-a-certain-website#serpapi_solution.py)
 - [Google Scholar Organic Results API](https://serpapi.com/google-scholar-organic-results)
 
 ___
