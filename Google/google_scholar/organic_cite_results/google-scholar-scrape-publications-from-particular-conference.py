@@ -9,7 +9,7 @@ def check_sources(source: list or str):
         return " OR ".join([f'source:{item}' for item in source]) # source:NIPS OR source:Neural Information
 
 
-def scrape_conference_publications(query: str, source: list[str]):
+def scrape_conference_publications(query: str, source: list or str):
     sources = check_sources(source=source)
         
     # https://docs.python-requests.org/en/master/user/quickstart/#passing-parameters-in-urls
