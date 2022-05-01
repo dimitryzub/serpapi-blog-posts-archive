@@ -4,7 +4,7 @@ import requests, json, os
 
 def check_sources(source: list or str):
     if isinstance(source, str):
-        return source
+        return source                                             # NIPS
     elif isinstance(source, list):
         return " OR ".join([f'source:{item}' for item in source]) # source:NIPS OR source:Neural Information
 
