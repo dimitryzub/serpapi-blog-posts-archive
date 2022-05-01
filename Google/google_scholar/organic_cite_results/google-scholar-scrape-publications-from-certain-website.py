@@ -2,12 +2,29 @@ from parsel import Selector
 import requests, json, os
 
 
-def scrape_conference_publications(query: str, website: str):
+def check_websites(website: list or str):
+    if isinstance(website, str):
+        return website                                           # cabdirect.org
+    elif isinstance(website, list):
+        return " OR ".join([f'site:{site}' for site in website]) # site:cabdirect.org OR site:cab.com
+
+
+def scrape_website_publications(query: str, website: list or str):
+    
+    """
+    Add a search query and site or multiple websites.
+
+    Following will work:
+        ["cabdirect.org", "lololo.com", "brabus.org"] -> list[str]
+        ["cabdirect.org"]                             -> list[str]
+        "cabdirect.org"                               -> str
+    """
+    
     # https://docs.python-requests.org/en/master/user/quickstart/#passing-parameters-in-urls
     params = {
-        "q": f'{query.lower()} site:{website}',  # search query
-        "hl": "en",                              # language of the search
-        "gl": "us"                               # country of the search
+        "q": f'{query.lower()} {check_websites(website=website)}',  # search query
+        "hl": "en",                                                 # language of the search
+        "gl": "us"                                                  # country of the search
     }
     
     # https://docs.python-requests.org/en/master/user/quickstart/#custom-headers
@@ -48,4 +65,4 @@ def scrape_conference_publications(query: str, website: str):
     print(json.dumps(publications, indent=2, ensure_ascii=False))
     
 
-scrape_conference_publications(query="biology", website="cabdirect.org")
+scrape_website_publications(query="biology", website="cabdirect.org")
