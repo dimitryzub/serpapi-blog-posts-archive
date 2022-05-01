@@ -15,9 +15,9 @@ def scrape_website_publications(query: str, website: list or str):
     Add a search query and site or multiple websites.
 
     Following will work:
-        ["cabdirect.org", "lololo.com", "brabus.org"] -> list[str]
-        ["cabdirect.org"]                             -> list[str]
-        "cabdirect.org"                               -> str
+    ["cabdirect.org", "lololo.com", "brabus.org"] -> list[str]
+    ["cabdirect.org"]                             -> list[str]
+    "cabdirect.org"                               -> str
     """
     
     # https://docs.python-requests.org/en/master/user/quickstart/#passing-parameters-in-urls
