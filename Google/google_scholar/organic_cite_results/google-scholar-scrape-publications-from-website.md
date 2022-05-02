@@ -129,7 +129,7 @@ from parsel import Selector
 import requests, json, os
 ```
 
-Create a functuion to check if `website` argument is either a `list` of `str` or a `string`: 
+Create a function to check if `website` argument is either a `list` of `str` or a `string`: 
 
 ```python
 # check if returned website argument is string or a list
