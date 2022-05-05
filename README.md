@@ -20,3 +20,7 @@ Wait untill I or SerpApi member send you ❤️
 ### Want to contribute?
 
 Follow [blog contribution guidelines](https://github.com/dimitryzub/serpapi-blog-posts-archive/wiki/Blog-contribution) ✍️
+
+### Licence
+
+[Creative Commons Zero v1.0 Universal](https://github.com/dimitryzub/serpapi-blog-posts-archive/blob/main/LICENSE)
