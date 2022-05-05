@@ -12,6 +12,11 @@ Simply mention and add canonical link. Mention example: `by/from Dmitriy Zub on 
 ### Found typo or something else you want to imporve?
 
 Two approaches:
-1. Fork the repo, and a pull request with understandable explanation.
+1. Fork the repo, open a pull request with understandable explanation.
 2. Open an issue with understandable explanation.
-3. Wait untill I or SerpApi member send you ❤️.
+
+Wait untill I or SerpApi member send you ❤️
+
+### Want to contribute?
+
+Follow [blog contribution guidelines](https://github.com/dimitryzub/serpapi-blog-posts-archive/wiki/Blog-contribution) ✍️
