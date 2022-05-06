@@ -1,8 +1,8 @@
 - <a href="#what_will_be_scraped">What will be scraped</a>
 - <a href="#prerequisites">Prerequisites</a>
 - <a href="#full_code">Full Code</a>
+  - <a href="#extracting_from_json">Extracting data from the JSON string</a>
 - <a href="#links">Links</a>
-- <a href="#outro">Outro</a>
 
 ___
 
