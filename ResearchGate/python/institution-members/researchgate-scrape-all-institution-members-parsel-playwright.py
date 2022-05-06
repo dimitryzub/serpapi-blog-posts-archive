@@ -7,7 +7,7 @@ def scrape_institution_members(institution: str):
     with sync_playwright() as p:
         
         institution_memebers = []
-        page_num = 1 
+        page_num = 1
         
         members_is_present = True
         while members_is_present:
@@ -39,7 +39,7 @@ def scrape_institution_members(institution: str):
                 members_is_present = False
             else:
                 time.sleep(2) # use proxies and captcha solver instead of this
-                page_num += 1 # pagination
+                page_num += 1 # increment a one. Pagination
 
         print(json.dumps(institution_memebers, indent=2, ensure_ascii=False))
         print(len(institution_memebers)) # 624 from a EM-Normandie-Business-School
