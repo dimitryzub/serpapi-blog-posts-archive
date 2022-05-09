@@ -1,6 +1,6 @@
 from parsel import Selector
 from playwright.sync_api import sync_playwright
-import re, json, time
+import json, time
 
 
 def scrape_institution_members(institution: str):
