@@ -11,11 +11,11 @@ def scrape_researchgate_profile(profile: str):
             "about": {},
             "co_authors": [],
             "publications": [],
-            }
+        }
         
         browser = p.chromium.launch(headless=True, slow_mo=50)
         page = browser.new_page(user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36")
-        page.goto(f"https://www.researchgate.net/profile/Agnis-Stibe")
+        page.goto(f"https://www.researchgate.net/profile/{profile}")
         selector = Selector(text=page.content())
         
         profile_data["basic_info"]["name"] = selector.css(".nova-legacy-e-text.nova-legacy-e-text--size-xxl::text").get()
