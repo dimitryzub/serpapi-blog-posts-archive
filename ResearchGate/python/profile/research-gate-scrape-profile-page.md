@@ -85,7 +85,7 @@ def scrape_researchgate_profile(profile: str):
         browser.close()
         
     
-scrape_researchgate_profile(profile="Agnis-Stibe")1
+scrape_researchgate_profile(profile="Agnis-Stibe")
 ```
 
 ### Code explanation
@@ -123,7 +123,7 @@ with sync_playwright() as p:
     # ...
 ```
 
-Define a structure of the extracted data:
+Define the structure of the extracted data:
 
 ```python
 profile_data = {
@@ -188,7 +188,7 @@ profile_data["about"]["skills"] = selector.css(".nova-legacy-l-flex__item .nova-
 |`get()`/`getall()`|[to get actual data from a matched node](https://github.com/scrapy/parsel/blob/90397dcd0b2c1cbb91e44f65c50f9e11628ba028/parsel/selector.py#L197-L204), or to [get a `list` of matched data from nodes](https://github.com/scrapy/parsel/blob/90397dcd0b2c1cbb91e44f65c50f9e11628ba028/parsel/selector.py#L447-L451).|
 |`xpath("normalize-space()")`|to parse blank text node as well. By default, blank text node is be skipped by XPath.|
 
-Iterate over co-athuors and extract individual co-author, and append to temporary list:
+Iterate over co-authors and extract individual co-author, and append to the temporary list:
 
 ```python
 for co_author in selector.css(".nova-legacy-c-card--spacing-xl .nova-legacy-c-card__body--spacing-inherit .nova-legacy-v-person-list-item"):
@@ -204,7 +204,7 @@ for co_author in selector.css(".nova-legacy-c-card--spacing-xl .nova-legacy-c-ca
 |----|-----------|
 |`::attr(attribute)`|[to extract attribute data](https://github.com/scrapy/parsel/blob/90397dcd0b2c1cbb91e44f65c50f9e11628ba028/parsel/csstranslator.py#L48-L51) from the node.|
 
-Next is to iterate over all publications and extract individual publication, and append to temporary list:
+Next is to iterate over all publications and extract individual publications, and append to a temporary list:
 
 ```python
 for publication in selector.css("#publications+ .nova-legacy-c-card--elevation-1-above .nova-legacy-o-stack__item"):
@@ -228,7 +228,7 @@ browser.close()
 
 
 # call function. "profiles" could be a list of authors.
-# author name should be with a "-", othwerwise ResearchGate don't recognize it.
+# author name should be with a "-", othwerwise ResearchGate doesn't recognize it.
 scrape_researchgate_profile(profile="Agnis-Stibe")
 ```
 
@@ -287,5 +287,3 @@ ___
 <p style="text-align: center;">Join us on <a href="https://twitter.com/serp_api">Twitter</a> | <a href="https://www.youtube.com/channel/UCUgIHlYBOD3yA3yDIRhg_mg">YouTube</a></p>
 
 <p style="text-align: center;">Add a  <a href="https://github.com/serpapi/public-roadmap/issues">Feature Request</a>💫 or a <a href="https://github.com/serpapi/public-roadmap/issues">Bug</a>🐞</p>
-
-<div style="text-align: center;"><p>🌼</p></div>
