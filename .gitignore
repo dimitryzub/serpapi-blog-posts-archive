@@ -1,5 +1,3 @@
-poetry.lock
-pyproject.toml
 .idea/.gitignore
 .idea/blog.iml
 .idea/csv-plugin.xml
