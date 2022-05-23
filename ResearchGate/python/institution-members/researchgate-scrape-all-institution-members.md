@@ -30,7 +30,7 @@ If you didn't work with a virtual environment before, have a look at the dedicat
 **Install libraries**:
 
 ```lang-none
-pip install requests parsel playwright
+pip install parsel playwright
 ```
 
 **Reduce the chance of being blocked**
