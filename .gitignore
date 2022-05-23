@@ -1,2 +1,17 @@
+google-news-tab
 *.env
 node_modules
+.idea/.gitignore
+.idea/blog.iml
+.idea/csv-plugin.xml
+.idea/markdown.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/rAvailablePackageCache.xml
+.idea/rGraphicsSettings.xml
+.idea/rpackages.xml
+.idea/rSettings.xml
+.idea/vcs.xml
+.ipynb_checkpoints/Untitled-checkpoint.ipynb
+.RDataFiles/532610550.RData
+main
