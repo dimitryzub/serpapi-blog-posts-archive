@@ -1,8 +1,8 @@
-##What will be scraped
+## What will be scraped
 
 ![What](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/afsvykjuo74n13wh1c33.png)
 
-##Preparation
+## Preparation
 
 First, we need to create a Node.js project and add `npm` packages [`cheerio`](https://www.npmjs.com/package/cheerio) to parse parts of the HTML markup, and [`axios`](https://www.npmjs.com/package/axios) to make a request to a website. To do this, in the directory with our project, open the command line and enter `npm init -y`, and then `npm i cheerio axios`.
 
@@ -12,7 +12,7 @@ The Gif below illustrates the approach of selecting different parts of the resul
 
 ![How](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/letec80rcxgjsnwi5t77.gif)
 
-##Full code
+## Full code
 
 ```javascript
 const cheerio = require("cheerio");
@@ -61,7 +61,7 @@ function getNewsInfo() {
 getNewsInfo().then(console.log);
 ```
 
-###Code explanation
+### Code explanation
 
 Declare constants from required libraries:
 
@@ -152,35 +152,31 @@ function getNewsInfo() {
 |`.text()`|gets the raw text of html element|
 |[`.trim()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/trim)|removes whitespace from both ends of a string|
 
-Now we can launch our parser. To do this enter `node YOUR_FILE_NAME` in your command line. Where `YOUR_FILE_NAME` is the name of your `.js` file
+Now we can launch our parser. To do this enter `node YOUR_FILE_NAME` in your command line. Where `YOUR_FILE_NAME` is the name of your `.js` file.
 
-##Output
+Outputs:
 
 ```json
 [
-  {
-    link: 'https://www.newyorker.com/news/q-and-a/why-elon-musk-bought-twitter',
-    source: 'The New Yorker',
-    title: 'Why Elon Musk Bought Twitter',
-    snippet: 'Portrait of Elon Musk looking off to the side. Musk, the C.E.O. of Tesla, has previously had some run-ins with the S.E.C.Source photograph by...',
-    image: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAdHx8kKDQsJCYxJx8fLT0tMTU3Ojo6Iys/RD84QzQ5OjcBCgoKDQwNGg8PGjclHyU3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3N//AABEIAHAAcAMBIgACEQEDEQH/xAAcAAABBQEBAQAAAAAAAAAAAAAFAAMEBgcCAQj/xAA8EAABAwIDBgIGBwgDAAAAAAABAAIDBBEFEiEGIjFBUWETcQcUMoGRwSNTgpKhsdFCUmJyouHw8RUlY//EABkBAAIDAQAAAAAAAAAAAAAAAAECAwQFAP/EACERAAICAgMAAgMAAAAAAAAAAAABAhEDIQQSMUFREyIy/9oADAMBAAIRAxEAPwAzKzLfsU0TZT61gbm81ANnFMnY5y158Rp7hWarGama5V1kYVmIz0DSOgST+AoEiG8hKfDcoXbhZcPe1tszgL8LmyWzjwlFMLOanc3oShJIuBcInhLrZ2lCXgURobsrW2/e1Vlb7IKBB7Iap+YcTojkZvGCkkFHSSSSRhBdc2090Mxdv0tR/FHHJ7wXA/JGMQbvNKG4k28kXR9PIz3jK4fkVJBgYPxSM71kMZEUZxQHKT2QimzO1JUsHoUkQ07jqrBC29AB0CDMdlCMYe7xKMhLMKAmNYhHhsAkkGZx9ll7XWZ4rj9fVvJkqHZRcZWkZePL+6vm2GG1GISU8MAJMhyN6Nd3/FD5tjaDD4mmVxqJeZdw+Ct4J44RuW2RyTbKHDiVbE/PDPK09Q4opBthjcBBbVyAjqrJFRwRndjYB0AUDaHD4XUb3xxgOGt1YWXHJ04i00G9m9vKWrqY4cWiyTO3RNGN2/ccvNaRSSsmhDo3BzeRBuvmwaHT4rRfRhtHMzEG4PU70c4JicTq1wF7eRAVflcRJdoDQnumaokkks0mItePoweiGVovHRu5NqMp8nNc35hFqwXhKEVp/wCtlf8AVOZJ91wPyTxAxutYHAdwhbWBvJGapu4xDjGcx05qSLAMht0YwkWiezuoDY+yIYbo9w5IS2jkdxsI8R/AC4BVbxOeJz3kvzG+iL7RTTR4LU+A+SMsOZzo2ZnEdAPgqVJUPdQvfJEQ8PyAk8dP9J8UL2CTORiVMZixgkIH7QYbJ6R7J2FpFwRbVC6KmlLpS+V+8QWG5AYOw5oq2JsbDd+bTS/FWZJLwSym4rh/qlZlabxvGZp6dl1gbpIccw58VxIyqisftDT3qxV1Ca2pphl3Wk5j2TdAGPxOnjgaWujqY7REaHeCsfm/SmLWzZjxK9Xl9U4AFi2WBmZuaMjshUsXjUlRB9ZE5vxFkaflsboUHN9ZOXQIxOGJ96FhUTI4vsBxKmBuenYBx0siVHRMg3nDNJ1twTXQKBjMPqSL+HbzKep6OeGXM9tm9ijCHVWINM7YIt4k69kttnUNVU8MTvBsC5wO77lnm0Ugi3YYLNYXF7WHUEkde1le6uIesteRvW4qpY3VCn9bpYY43SlwkeZQbW5aDjqrGHTFkBKR7nsvYhp4X4p65zWKiwSVZA8TwMvYEFSnuGQWGvNWmtiEhrrMzcx0XOzrWybU0UMUZLmkzSEjg0X1Pe5CjCc6BWDZWmb/AMt63n+kEHhFtuOoN0kn1i7CvS+8EsxXl9Aks8lPeN0LfuVJ80TCG1gtPdFHDcLstO137pujDaiNzA8ut5qI6kZTRauLh3CFVNW6cmOAWYOLka7AJlfiJkJipybc3KNTt8N4de7r8UzGBGLBdeLYpqo6yZWcWlBMVp42GesyF5MWVwAvw4FGKp2eNluJQ3aSsGz+FyVk7mGUi0MJNi936Dmmxp2kgPwpMlQ0Ddsb80wZXX0N1cqOgpdo9nKOqsyOrlgaXVEbGh2e29ccDrdVWXAsWpnSua6GrjYTvRaOI/l/S6uQnHaemiNpipm6ZiLqQ6vko7vgkMb2jQhD4qkXDbkdiptBhzq2SSSYWp2HePDN2CLS+TkX/CMcgqGUdNVSCKtqIPFZG/d8Qc8vUjmEXuFl227ziOBRYhR3jmw+YE5DYtadLg+YB9xQPDvSFj9EwMlnZVM/92XP3hY/G6iXElkj2gN3rTNqknjjtncAoeIe013JY1XbZV+IVkVRK90bY3hzYozu6f5zWg4ftjg2Kwxxtq2wz6Dw6jcJPQE6H3FJPiZMaTaCppllFX6+2QtNmNNghhGQWHBe4VoXNSm9tyhqnQRu5T7aN7m5i62iE4nidHhUPi1kobf2WDVz/IKhbR7ZV2L3p4nOp6P6ph1f/MeflwU+PjzyPXgrkkXHaHbihwwCChc2qqozxBvG0jqefkFnWL43W4xM6or5zNM7S5sA0dABoAhcjtbJNK08XGhjVr0ilJs0j0ZYtlwfEKJzt+nu+IH+LQf1I3Rx1cIHCRg72KzjY6rFLtDThxAjn+idfvw/Fa8xrcqocuPTI39kkNorgwUT402R7Aadz3SaD32KMS0jMjY8gEQ4NYLBTmNa17SG8De67kO6DZV5ZGxqK/NhRyTNjZeGaMxyxv4OaVkNXCaaqmgf7Uby2/WxW8ON1j22tN6rtFU6WEln/I/kr3ByNycWJkQDulx4pLwLTITesONpnDlZDdrsRkwrC6mpgDfEBa1mYXAJKI0fhsnAvcnoq/6S3NbgThwLpmW/H9FgY4qWVJll/wAmYVldUV1Q+eqldJK46kplmrgm3cV3GefQLd6pKkVzmQ71wkF5+yfNIJgDjJHRyMkjNnscHNPcahbfg9a3EMOp6ph0ljDvIrDb6LQvRliWenqMOkO9EfEj8jx+B/NUubj7Q7fRJjdMvwKceMzSOoUfMnmybrTY66LIZMMjyWbek+DLiFJOB7bHNPustJccriOiovpRYPU6KTmJS2/2SfkrPEdZkJPwzxeJJLbID//Z',
-    date: '2 weeks ago'
-  },
-... and other results
+   {
+      "link":"https://www.newyorker.com/news/q-and-a/why-elon-musk-bought-twitter",
+      "source":"The New Yorker",
+      "title":"Why Elon Musk Bought Twitter",
+      "snippet":"Portrait of Elon Musk looking off to the side. Musk, the C.E.O. of Tesla, has previously had some run-ins with the S.E.C.Source photograph by...",
+      "image":"data:image/jpeg;base64,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",
+      "date":"2 weeks ago"
+   }, ... other results
 ]
 ```
-##Google News Result API
+
+## Google News Result API
 
 Alternatively, you can use the [Google News Result API](https://serpapi.com/news-results) from SerpApi. SerpApi is a free API with 100 search per month. If you need more searches, there are paid plans.
 
 The difference is that all that needs to be done is just to iterate over a ready made, structured JSON instead of coding everything from scratchmaintaining, figuring out how to bypass blocks from Google, and selecting correct selectors which could be time consuming at times. [Check out the playground](https://serpapi.com/playground).
 
-##Usage
+First we need to install [`google-search-results-nodejs`](https://www.npmjs.com/package/google-search-results-nodejs). To do this you need to enter in your console: `npm i google-search-results-nodejs`
 
-First we need to install [`google-search-results-nodejs`](https://www.npmjs.com/package/google-search-results-nodejs). To do this you need to enter in your console:
-`npm i google-search-results-nodejs`
-
-##Code
 
 ```javascript
 const SerpApi = require("google-search-results-nodejs");
@@ -220,7 +216,7 @@ const getJson = (params) => {
 getJson(params).then(getNewsData).then(console.log)
 ```
 
-###Code explanation
+### Code explanation
 
 Declare constants from required libraries:
 
@@ -247,6 +243,7 @@ const params = {
   hl: "en",
   tbm: "nws"
 ```
+
 |Code|Explanation|
 |----|-----------|
 |`searchString`|what we want to search|
@@ -295,24 +292,22 @@ const getJson = (params) => {
 getJson(params).then(getNewsData).then(console.log)
 ```
 
-##Output:
+Outputs:
 
 ```json
 [
-  {
-    link: 'https://nypost.com/2022/05/13/elon-musk-backs-gop-bid-to-strip-disney-of-mickey-mouse-copyright/',
-    source: 'New York Post',
-    title: 'Elon Musk backs GOP bid to strip Disney of Mickey Mouse copyright',
-    snippet: "Elon Musk appeared to voice his support for a Republican senator's efforts \n" +
-      'to strip The Walt Disney Co. of its copyright of Mickey Mouse.',
-    image: 'https://serpapi.com/searches/627e67d93c3fb22215607d9e/images/22b0f5e214e9045c6dc1c6c683cc0b1468248a0cb118e82ed3c7f8900a359195.jpeg',
-    date: '17 mins ago'
-  },
-... and other results
+   {
+      "link":"https://nypost.com/2022/05/13/elon-musk-backs-gop-bid-to-strip-disney-of-mickey-mouse-copyright/",
+      "source":"New York Post",
+      "title":"Elon Musk backs GOP bid to strip Disney of Mickey Mouse copyright",
+      "snippet":"Elon Musk appeared to voice his support for a Republican senator's efforts \n""+""to strip The Walt Disney Co. of its copyright of Mickey Mouse.",
+      "image":"https://serpapi.com/searches/627e67d93c3fb22215607d9e/images/22b0f5e214e9045c6dc1c6c683cc0b1468248a0cb118e82ed3c7f8900a359195.jpeg",
+      "date":"17 mins ago"
+   }, ... other results
 ]
 ```
 
-##Links
+## Links
 * [Code in the online IDE](https://replit.com/@MikhailZub/Google-News-Tab-scrape-NodeJS-SerpApi#index.js) 
 * [Google News Result API](https://serpapi.com/news-results).
 
