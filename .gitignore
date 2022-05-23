@@ -1,3 +1,6 @@
+google-news-tab
+*.env
+node_modules
 .idea/.gitignore
 .idea/blog.iml
 .idea/csv-plugin.xml
@@ -11,3 +14,4 @@
 .idea/vcs.xml
 .ipynb_checkpoints/Untitled-checkpoint.ipynb
 .RDataFiles/532610550.RData
+main
