@@ -136,7 +136,7 @@ page = browser.new_page(user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) Ap
 |[`slow_mo`](https://github.com/microsoft/playwright-python/blob/3b7968fb2ea4238a89447b3c7766f9f1f9c9c0e3/playwright/sync_api/_generated.py#L11514-L11515)|to tell `playwright` to slow down execution.|
 |[`browser.new_page()`](https://playwright.dev/python/docs/api/class-browser#browser-new-page)|to open new page. `user_agent` is used to act a real user makes a request from the browser. If not used, it will default to `playwright` value which is `None`. [Check what's your user-agent](https://www.whatismybrowser.com/detect/what-is-my-user-agent/).|
 
-Add a temporary list, setup a while loop, open new URL:
+Add a temporary list, set up a while loop, and open a new URL:
 
 ```python
 authors = []
@@ -186,10 +186,10 @@ for author in selector.css(".nova-legacy-c-card__body--spacing-inherit"):
 |`get()`/`getall()`|[to get actual data from a matched node](https://github.com/scrapy/parsel/blob/90397dcd0b2c1cbb91e44f65c50f9e11628ba028/parsel/selector.py#L197-L204), or to [get a `list` of matched data from nodes](https://github.com/scrapy/parsel/blob/90397dcd0b2c1cbb91e44f65c50f9e11628ba028/parsel/selector.py#L447-L451).|
 |`xpath("normalize-space()")`|to parse blank text node as well. By default, blank text node is be skipped by XPath.|
 
-Check if next page is present and paginate:
+Check if the next page is present and paginate:
 
 ```python
-# checks if next page arrow key is greyed out `attr(rel)` (inactive) -> breaks out of the loop
+# checks if the next page arrow key is greyed out `attr(rel)` (inactive) -> breaks out of the loop
 if selector.css(".nova-legacy-c-button-group__item:nth-child(9) a::attr(rel)").get():
     break
 else:
