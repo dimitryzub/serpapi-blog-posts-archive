@@ -1,3 +1,5 @@
+*.env
+node_modules
 .idea/.gitignore
 .idea/blog.iml
 .idea/csv-plugin.xml
