@@ -230,7 +230,7 @@ Part of the JSON output:
     ]
   }, ... other profiles
   {
-    "name": "Kingsten Okka", # last porfile
+    "name": "Kingsten Okka", # last profile
     "profile_page": "https://www.researchgate.net/profile/Kingsten-Okka?_sg=l1w_rzLrAUCRFtoo3Nh2-ZDAaG2t0NX5IHiSV5TF2eOsDdlP8oSuHnGglAm5tU6OFME9wgfyAd-Rnhs",
     "institution": "University of Southern Queensland ",
     "department": "School of Agricultural, Computational and Environmental Sciences",
