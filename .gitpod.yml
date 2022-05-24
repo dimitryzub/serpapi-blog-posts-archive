@@ -7,6 +7,5 @@ tasks:
 vscode:
   extensions:
     - usernamehw.errorlens
-    - ansim.solarized-sunset
     - vscode-icons-team.vscode-icons
     - bierner.markdown-preview-github-styles
