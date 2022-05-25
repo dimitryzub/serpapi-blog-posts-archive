@@ -5,7 +5,7 @@ description = ""
 authors = ["Dmitriy <dmitriy@serpapi.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.8"
 requests = "^2.27.1"
 parsel = "^1.6.0"
 playwright = "^1.20.1"
