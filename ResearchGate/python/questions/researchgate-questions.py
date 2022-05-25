@@ -21,6 +21,7 @@ def scrape_researchgate_questions(query: str):
                 title_link = f'https://www.researchgate.net{question.css(".nova-legacy-v-question-item__title .nova-legacy-e-link--theme-bare::attr(href)").get()}'
                 question_type = question.css(".nova-legacy-v-question-item__badge::text").get()
                 question_date = question.css(".nova-legacy-v-question-item__meta-data-item:nth-child(1) span::text").get()
+                snippet = question.css(".redraft-text::text").get()
                 
                 views = question.css(".nova-legacy-v-question-item__metrics-item:nth-child(1) .nova-legacy-e-link--theme-bare::text").get()
                 views_link = question.css(".nova-legacy-v-question-item__metrics-item:nth-child(1) .nova-legacy-e-link--theme-bare::attr(href)").get()
@@ -31,6 +32,7 @@ def scrape_researchgate_questions(query: str):
                 questions.append({
                     "title": title,
                     "link": title_link,
+                    "snippet": snippet,
                     "question_type": question_type,
                     "question_date": question_date,
                     "views": {

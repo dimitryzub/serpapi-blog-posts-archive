@@ -6,7 +6,7 @@
 
 <h2 id="what_will_be_scraped">What will be scraped</h2>
 
-![image](https://user-images.githubusercontent.com/78694043/170032839-68b274dd-80c5-4e2b-b47f-3ae135008132.png)
+![image](https://user-images.githubusercontent.com/78694043/170258164-ea6ced1e-d6a6-40cf-a017-9d61a87931bc.png)
 
 <h2 id="prerequisites">Prerequisites</h2>
 
@@ -56,7 +56,8 @@ def scrape_researchgate_questions(query: str):
                 title_link = f'https://www.researchgate.net{question.css(".nova-legacy-v-question-item__title .nova-legacy-e-link--theme-bare::attr(href)").get()}'
                 question_type = question.css(".nova-legacy-v-question-item__badge::text").get()
                 question_date = question.css(".nova-legacy-v-question-item__meta-data-item:nth-child(1) span::text").get()
-                
+                snippet = question.css(".redraft-text::text").get()
+
                 views = question.css(".nova-legacy-v-question-item__metrics-item:nth-child(1) .nova-legacy-e-link--theme-bare::text").get()
                 views_link = question.css(".nova-legacy-v-question-item__metrics-item:nth-child(1) .nova-legacy-e-link--theme-bare::attr(href)").get()
 
@@ -66,6 +67,7 @@ def scrape_researchgate_questions(query: str):
                 questions.append({
                     "title": title,
                     "link": title_link,
+                    "snippet": snippet,
                     "question_type": question_type,
                     "question_date": question_date,
                     "views": {
@@ -160,7 +162,8 @@ for question in selector.css(".nova-legacy-c-card__body--spacing-inherit"):
     title_link = f'https://www.researchgate.net{question.css(".nova-legacy-v-question-item__title .nova-legacy-e-link--theme-bare::attr(href)").get()}'
     question_type = question.css(".nova-legacy-v-question-item__badge::text").get()
     question_date = question.css(".nova-legacy-v-question-item__meta-data-item:nth-child(1) span::text").get()
-    
+    snippet = question.css(".redraft-text::text").get()
+
     views = question.css(".nova-legacy-v-question-item__metrics-item:nth-child(1) .nova-legacy-e-link--theme-bare::text").get()
     views_link = question.css(".nova-legacy-v-question-item__metrics-item:nth-child(1) .nova-legacy-e-link--theme-bare::attr(href)").get()
 
@@ -170,6 +173,7 @@ for question in selector.css(".nova-legacy-c-card__body--spacing-inherit"):
     questions.append({
         "title": title,
         "link": title_link,
+        "snippet": snippet,
         "question_type": question_type,
         "question_date": question_date,
         "views": {
