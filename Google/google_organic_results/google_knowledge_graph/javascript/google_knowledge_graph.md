@@ -1,6 +1,6 @@
 <h2 id='what'>What will be scraped</h2>
 
-![what2](https://serpapi.com/blog/content/images/2022/05/what2.png)
+![image](https://user-images.githubusercontent.com/64033139/170515743-73fc2b57-bd50-4a22-8b49-dab2f57771b8.png)
 
 📌Note: the knowledge graph has different layouts, so the code I provide works with this layout as shown in the screenshot.
 
