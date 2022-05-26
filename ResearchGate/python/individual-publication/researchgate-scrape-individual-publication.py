@@ -27,6 +27,8 @@ def scrape_researchgate_publication(publication: str):
         pubilication_data["publication_info"]["publication_full_text_link"] = selector.css(".research-detail-header-cta__buttons a:nth-child(2)::attr(href)").get()
         pubilication_data["publication_info"]["publication_journal"] = selector.css(".nova-legacy-e-text--color-grey-700+ .nova-legacy-e-text--color-grey-700 .nova-legacy-e-link--theme-decorated::text").get()
         pubilication_data["publication_info"]["publication_journal_link"] = f'https://www.researchgate.net{selector.css(".nova-legacy-e-text--color-grey-700+ .nova-legacy-e-text--color-grey-700 .nova-legacy-e-link--theme-decorated::attr(href)").get()}'
+        pubilication_data["publication_info"]["project_title"] = selector.css(".nova-legacy-e-text--color-grey-700+ .nova-legacy-e-text--color-grey-700 .nova-legacy-e-list__item .nova-legacy-e-link--theme-decorated::text").get()
+        pubilication_data["publication_info"]["project_link"] = f'https://www.researchgate.net{selector.css(".nova-legacy-e-text--color-grey-700+ .nova-legacy-e-text--color-grey-700 .nova-legacy-e-list__item .nova-legacy-e-link--theme-decorated::attr(href)").get()}'
         pubilication_data["publication_info"]["citation_link"] = selector.css(".nova-legacy-l-flex__item.hide-l a:nth-child(1)::attr(href)").get()
         
         for reference in selector.css(".publication-citations__item--redesign"):
