@@ -22,11 +22,11 @@ function buildValidLink(rawLink) {
   return domain + rawLink;
 }
 
-function getScholarInfo() {
+function getScholarOrganicResults() {
   return axios.get(`${domain}/scholar`, AXIOS_OPTIONS).then(function ({ data }) {
     let $ = cheerio.load(data);
 
-    const allInfo = Array.from($(".gs_r.gs_scl")).map((el) => {
+    const organicResults = Array.from($(".gs_r.gs_scl")).map((el) => {
       const cited_by_rawLink = $(el).find(".gs_fl > a:nth-child(3)").attr("href");
       const related_articles_rawLink = $(el).find(".gs_fl > a:nth-child(4)").attr("href");
       const all_versions_rawLink = $(el).find(".gs_fl > a:nth-child(5)").attr("href");
@@ -44,8 +44,8 @@ function getScholarInfo() {
         all_versions,
       };
     });
-    return allInfo;
+    return organicResults;
   });
 }
 
-module.exports = { getScholarInfo };
+module.exports = { getScholarOrganicResults };

@@ -1,12 +1,12 @@
 <h2 id='what'>What will be scraped</h2>
 
-![what-5](https://serpapi.com/blog/content/images/2022/05/what-5.png)
+![image](https://user-images.githubusercontent.com/64033139/170513874-a200b9f7-2b56-414c-8cf9-6e6dcacff822.png)
 
 <h2 id='preparation'>Preparation</h2>
 
 First, we need to create a Node.js* project and add [`npm`](https://www.npmjs.com/) packages [`cheerio`](https://www.npmjs.com/package/cheerio) to parse parts of the HTML markup, and [`axios`](https://www.npmjs.com/package/axios) to make a request to a website. To do this, in the directory with our project, open the command line and enter `npm init -y`, and then `npm i cheerio axios`.
 
-*<span style="font-size: 15px;">If you don't have Node.js installed, you can download it from [here](https://nodejs.org/en/) and follow the installation [documentation](https://nodejs.dev/learn/introduction-to-nodejs).</span>
+*<span style="font-size: 15px;">If you don't have Node.js installed, you can [download it from nodejs.org](https://nodejs.org/en/) and follow the installation [documentation](https://nodejs.dev/learn/introduction-to-nodejs).</span>
 
 <h2 id='process'>Process</h2>
 
@@ -42,11 +42,11 @@ function buildValidLink(rawLink) {
   return domain + rawLink;
 }
 
-function getScholarInfo() {
+function getScholarOrganicResults() {
   return axios.get(`${domain}/scholar`, AXIOS_OPTIONS).then(function ({ data }) {
     let $ = cheerio.load(data);
 
-    const allInfo = Array.from($(".gs_r.gs_scl")).map((el) => {
+    const organicResults = Array.from($(".gs_r.gs_scl")).map((el) => {
       const cited_by_rawLink = $(el).find(".gs_fl > a:nth-child(3)").attr("href");
       const related_articles_rawLink = $(el).find(".gs_fl > a:nth-child(4)").attr("href");
       const all_versions_rawLink = $(el).find(".gs_fl > a:nth-child(5)").attr("href");
@@ -64,11 +64,11 @@ function getScholarInfo() {
         all_versions,
       };
     });
-    return allInfo;
+    return organicResults;
   });
 }
 
-getScholarInfo().then(console.log);
+getScholarOrganicResults().then(console.log);
 ```
 
 <h3 id='code_explanation'>Code explanation</h3>
@@ -137,7 +137,7 @@ function getScholarInfo() {
   return axios.get(`${domain}/scholar`, AXIOS_OPTIONS).then(function ({ data }) {
     let $ = cheerio.load(data);
 
-    const allInfo = Array.from($(".gs_r.gs_scl")).map((el) => {
+    const organicResults = Array.from($(".gs_r.gs_scl")).map((el) => {
       const cited_by_rawLink = $(el).find(".gs_fl > a:nth-child(3)").attr("href");
       const related_articles_rawLink = $(el).find(".gs_fl > a:nth-child(4)").attr("href");
       const all_versions_rawLink = $(el).find(".gs_fl > a:nth-child(5)").attr("href");
@@ -155,7 +155,7 @@ function getScholarInfo() {
         all_versions,
       };
     });
-    return allInfo;
+    return organicResults;
   });
 }
 ```
@@ -163,7 +163,7 @@ function getScholarInfo() {
 |Code|Explanation|
 |----|-----------|
 |`function ({ data })`|we received the response from axios request that have `data` key that we [destructured](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment) (this entry is equal to `function (response)` and in the next line `cheerio.load(response.data)`)|
-|`allInfo`|an array with full info from page|
+|`organicResults`|an array with organic results from page|
 |`.attr('href')`|gets the `href` attribute value of the html element|
 |`$(el).find('.gs_rt')`|finds element with class name `gs_rt` in all child elements and their children of `el` html element|
 |`.text()`|gets the raw text of html element|
@@ -204,7 +204,7 @@ Now we can launch our parser. To do this enter `node YOUR_FILE_NAME` in your com
 
 Alternatively, you can use the [Google Scholar Organic Results API](https://serpapi.com/google-scholar-organic-results) from SerpApi. SerpApi is a free API with 100 search per month. If you need more searches, there are paid plans.
 
-The difference is that all that needs to be done is just to iterate over a ready-made, structured JSON instead of coding everything from scratch, maintaining, figuring out how to bypass blocks from Google, and selecting correct selectors which could be time-consuming at times. [Check out the playground](https://serpapi.com/playground).
+The difference is that you won't have to write code from scratch and maintain it. You may also experience blocking from Google and changing the selected selectors. Using a ready-made solution from SerpAPI, you just need to iterate the received JSON. [Check out the playground](https://serpapi.com/playground).
 
 First we need to install [`google-search-results-nodejs`](https://www.npmjs.com/package/google-search-results-nodejs). To do this you need to enter in your console: `npm i google-search-results-nodejs`
 
