@@ -21,7 +21,7 @@ function getKnowledgeGraphInfo() {
   return axios.get(`${domain}/search`, AXIOS_OPTIONS).then(function ({ data }) {
     let $ = cheerio.load(data);
 
-    const pattern = /s='(?<img>[^']+)';\w+\s\w+=\['(?<id>\w+_\d+)'];/gm;
+    const pattern = /s='(?<img>[^']+)';\w+\s\w+=\['(?<id>\w+_\d+)'];/gm;      // https://regex101.com/r/pMd0yx/1
     const images = [...data.matchAll(pattern)].map(({ groups }) => ({ id: groups.id, img: groups.img.replace(/\\x3d/gi, "") }));
 
     const allInfo = {
@@ -30,9 +30,9 @@ function getKnowledgeGraphInfo() {
       image: images.find(({ id }) => id === $(".I6TXqe .FZylgf img")?.attr("id")).img,
       website: $(".I6TXqe .B1uW2d").attr("href"),
       description: {
-        text: $(".I6TXqe .hb8SAc span:nth-child(2)").text().trim(),
-        source: $(".I6TXqe .hb8SAc span:nth-child(3) a").text().trim(),
-        link: $(".I6TXqe .hb8SAc span:nth-child(3) a").attr("href"),
+        text: $(".LWkfKe+ span").text().trim(),
+        source: $(".NJLBac").text().trim(),
+        link: $(".NJLBac").attr("href"),
       },
       main: Array.from($(".I6TXqe .wDYxhc .Z1hOCe")).reduce((acc, el) => {
         const key = $(el).find(".w8qArf a").text().trim();

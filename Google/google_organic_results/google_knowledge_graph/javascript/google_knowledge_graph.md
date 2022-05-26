@@ -1,19 +1,21 @@
 <h2 id='what'>What will be scraped</h2>
 
-![what-3](https://serpapi.com/blog/content/images/2022/05/what-3.png)
+![what2](https://serpapi.com/blog/content/images/2022/05/what2.png)
+
+📌Note: the knowledge graph has different layouts, so the code I provide works with this layout as shown in the screenshot.
 
 <h2 id='preparation'>Preparation</h2>
 
 First, we need to create a Node.js* project and add [`npm`](https://www.npmjs.com/) packages [`cheerio`](https://www.npmjs.com/package/cheerio) to parse parts of the HTML markup, and [`axios`](https://www.npmjs.com/package/axios) to make a request to a website. To do this, in the directory with our project, open the command line and enter `npm init -y`, and then `npm i cheerio axios`.
 
-*<span style="font-size: 15px;">If you don't have Node.js installed, you can download it from [here](https://nodejs.org/en/) and follow the installation [documentation](https://nodejs.dev/learn/introduction-to-nodejs).</span>
+*<span style="font-size: 15px;">If you don't have Node.js installed, you can [download it from nodejs.org](https://nodejs.org/en/) and follow the installation [documentation](https://nodejs.dev/learn/introduction-to-nodejs).</span>
 
 <h2 id='process'>Process</h2>
 
 [SelectorGadget Chrome extension](https://chrome.google.com/webstore/detail/selectorgadget/mhjhnkcfbdhnjickkkdbjoemdmbfginb) was used to grab CSS selectors by clicking on the desired element in the browser. If you have any struggles understanding this, we have a dedicated [Web Scraping with CSS Selectors blog post](https://serpapi.com/blog/web-scraping-with-css-selectors-using-python/) at SerpApi.
 The Gif below illustrates the approach of selecting different parts of the results.
 
-![how-2](https://serpapi.com/blog/content/images/2022/05/how-2.gif)
+![how2](https://serpapi.com/blog/content/images/2022/05/how2.gif)
 
 <h2 id='full_code'>Full code</h2>
 
@@ -41,7 +43,7 @@ function getKnowledgeGraphInfo() {
   return axios.get(`${domain}/search`, AXIOS_OPTIONS).then(function ({ data }) {
     let $ = cheerio.load(data);
 
-    const pattern = /s='(?<img>[^']+)';\w+\s\w+=\['(?<id>\w+_\d+)'];/gm;
+    const pattern = /s='(?<img>[^']+)';\w+\s\w+=\['(?<id>\w+_\d+)'];/gm;      // https://regex101.com/r/pMd0yx/1
     const images = [...data.matchAll(pattern)].map(({ groups }) => ({ id: groups.id, img: groups.img.replace(/\\x3d/gi, "") }));
 
     const allInfo = {
@@ -50,9 +52,9 @@ function getKnowledgeGraphInfo() {
       image: images.find(({ id }) => id === $(".I6TXqe .FZylgf img").attr("id"))?.img,
       website: $(".I6TXqe .B1uW2d").attr("href"),
       description: {
-        text: $(".I6TXqe .hb8SAc span:nth-child(2)").text().trim(),
-        source: $(".I6TXqe .hb8SAc span:nth-child(3) a").text().trim(),
-        link: $(".I6TXqe .hb8SAc span:nth-child(3) a").attr("href"),
+        text: $(".LWkfKe+ span").text().trim(),
+        source: $(".NJLBac").text().trim(),
+        link: $(".NJLBac").attr("href"),
       },
       main: Array.from($(".I6TXqe .wDYxhc .Z1hOCe")).reduce((acc, el) => {
         const key = $(el).find(".w8qArf a").text().trim();
@@ -140,9 +142,9 @@ function getKnowledgeGraphInfo() {
       image: images.find(({ id }) => id === $(".I6TXqe .FZylgf img")?.attr("id")).img,
       website: $(".I6TXqe .B1uW2d").attr("href"),
       description: {
-        text: $(".I6TXqe .hb8SAc span:nth-child(2)").text().trim(),
-        source: $(".I6TXqe .hb8SAc span:nth-child(3) a").text().trim(),
-        link: $(".I6TXqe .hb8SAc span:nth-child(3) a").attr("href"),
+        text: $(".LWkfKe+ span").text().trim(),
+        source: $(".NJLBac").text().trim(),
+        link: $(".NJLBac").attr("href"),
       },
       main: Array.from($(".I6TXqe .wDYxhc .Z1hOCe")).reduce((acc, el) => {
         const key = $(el).find(".w8qArf a").text().trim();
@@ -170,7 +172,7 @@ function getKnowledgeGraphInfo() {
 |`images`|an array that contains the id of the `img` selector and the image itself|
 |`[...data.matchAll(pattern)]`|in this code we use [spread syntax](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax) to create an array from an [iterator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Iterators_and_Generators) that was returned from [matchAll method](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/matchAll) (in this case this entry is equal to `Array.from(data.matchAll(pattern))`)|
 |`.replace('\\x3d', '')`|in this code we remove `\\x3d` chars from the end of the [`base64`](https://en.wikipedia.org/wiki/Base64) image format string to display image properly|
-|`allInfo`|an object with full info from page|
+|`allInfo`|an object with full info from knowledge graph|
 |`{ id }`|`id` that we destructured from images array element to compare it with `id` attribute from html element|
 |`.attr('href')`|gets the `href` attribute value of the html element|
 |`$(el).find('.kno-fv')`|finds element with class name `kno-fv` in all child elements and their children of `el` html element|
@@ -223,7 +225,7 @@ Now we can launch our parser. To do this enter `node YOUR_FILE_NAME` in your com
 
 Alternatively, you can use the [Google Knowledge Graph API](https://serpapi.com/knowledge-graph) from SerpApi. SerpApi is a free API with 100 search per month. If you need more searches, there are paid plans.
 
-The difference is that all that needs to be done is just to iterate over a ready made, structured JSON instead of coding everything from scratch, maintaining, figuring out how to bypass blocks from Google, and selecting correct selectors which could be time consuming at times. [Check out the playground](https://serpapi.com/playground).
+The difference is that you will get a ready-made structured JSON, and you will not need to look for the right selectors, which can change over time, bypass blocking from Google, and maintain a solution written from scratch. [Check out the playground](https://serpapi.com/playground).
 
 First we need to install [`google-search-results-nodejs`](https://www.npmjs.com/package/google-search-results-nodejs). To do this you need to enter in your console: `npm i google-search-results-nodejs`
 
@@ -376,8 +378,11 @@ const getKnowledgeGraph = function ({ knowledge_graph }) {
 
 |Code|Explanation|
 |----|-----------|
-|`knowledge_graph`|an array that we destructured from response|
+|`knowledge_graph`|an object that we destructured from response|
+|`allInfo`|we define an object and create a structure like in a page|
 |`{...acc, [el.name]: el.link}`|in this code we use [spread syntax](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax) to create an object from result that was returned from previous reduce call and add to this object new item with key `el.name` and value `el.link`|
+
+Also, we need to iterate our `knowledge_graph` object instead of just getting data like `const allInfo = {title: knowledge_graph.title, ...}` because data (key names) that I called `main` is changes with different search requests in the `knowledge_graph` object.
 
 Next, we wrap the search method from the SerpApi library in a promise to further work with the search results and run it:
 
