@@ -1,5 +1,5 @@
 ---
-name: "[Website name] <short explanation>"
+name: "<short description>"
 about: Default issue template
 title: ''
 labels: ''
