@@ -1,9 +1,6 @@
-
-
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/78694043/162030076-8c595a40-31a0-4c25-bac6-4fec9a74d8a1.png" />
+  <img src="https://user-images.githubusercontent.com/78694043/171443842-39276e5f-1e4d-48cc-856b-dce7a62a7abd.png" />
 </p>
-
 
 ### Want to use a blog post on your website?
 
