@@ -1,6 +1,6 @@
 <h2>What will be scraped</h2>
 
-![what-2](https://serpapi.com/blog/content/images/2022/05/what-2.png)
+![image](https://user-images.githubusercontent.com/64033139/170516515-1d56bce0-1609-406c-a60f-1f9c0751207d.png)
 
 <h2>Preparation</h2>
 

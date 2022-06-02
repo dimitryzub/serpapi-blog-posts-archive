@@ -1,6 +1,6 @@
 ## What will be scraped
 
-![What](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/afsvykjuo74n13wh1c33.png)
+![image](https://user-images.githubusercontent.com/64033139/170518176-bbbbe124-f0e1-41ca-88a8-ed56f49d67e8.png)
 
 ## Preparation
 
