@@ -16,7 +16,7 @@
 If you found a typo or something isn't working correctly:
 
 1. Fork the repo, and open a pull request with an understandable explanation.
-2. Open an issue with an understandable explanation.
+2. Open an issue with an understandable explanation. Use the Bug report issue template.
 
 <div align="center">
   <p>🌼</p>
