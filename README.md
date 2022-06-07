@@ -6,17 +6,11 @@
 
 Simply mention and add canonical link. Mention example: `by/from Dmitriy Zub on <website_copying_from>`
 
-### Found typo or something else you want to imporve?
-
-Two approaches:
-1. Fork the repo, open a pull request with understandable explanation.
-2. Open an issue with understandable explanation.
-
-Wait untill I or SerpApi member send you ❤️
-
 ### Want to contribute?
 
-Follow [blog contribution guidelines](https://github.com/dimitryzub/serpapi-blog-posts-archive/wiki/Blog-contribution) ✍️
+Follow [blog contribution guidelines](https://github.com/dimitryzub/serpapi-blog-posts-archive/wiki/Blog-contribution).
+
+Follow [typo of other errors contribution guidelines](https://github.com/dimitryzub/serpapi-blog-posts-archive/wiki#-other-contribution).
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/dimitryzub/serpapi-blog-posts-archive)
 
