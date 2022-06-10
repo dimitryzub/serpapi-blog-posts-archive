@@ -5,13 +5,15 @@
 
 <h2 id='preparation'>Preparation</h2>
 
-First, we need to create a Node.js* project and add [`npm`](https://www.npmjs.com/) packages [`puppeteer`](https://www.npmjs.com/package/puppeteer), [`puppeteer-extra`](https://www.npmjs.com/package/puppeteer-extra) and [`puppeteer-extra-plugin-stealth`](https://www.npmjs.com/package/puppeteer-extra-plugin-stealth) to control Chromium (or Chrome, or Firefox, but now we work only with Chromium which is used by default) over the [DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/) in [headless](https://developers.google.com/web/updates/2017/04/headless-chrome) or full (non-headless) mode. To do this, in the directory with our project, open the command line and enter `npm init -y`, and then `npm i puppeteer puppeteer-extra puppeteer-extra-plugin-stealth`.
+First, we need to create a Node.js* project and add [`npm`](https://www.npmjs.com/) packages [`puppeteer`](https://www.npmjs.com/package/puppeteer), [`puppeteer-extra`](https://www.npmjs.com/package/puppeteer-extra) and [`puppeteer-extra-plugin-stealth`](https://www.npmjs.com/package/puppeteer-extra-plugin-stealth) to control Chromium (or Chrome, or Firefox, but now we work only with Chromium which is used by default) over the [DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/) in [headless](https://developers.google.com/web/updates/2017/04/headless-chrome) or non-headless mode. 
+
+To do this, in the directory with our project, open the command line and enter `npm init -y`, and then `npm i puppeteer puppeteer-extra puppeteer-extra-plugin-stealth`.
 
 *<span style="font-size: 15px;">If you don't have Node.js installed, you can [download it from nodejs.org](https://nodejs.org/en/) and follow the installation [documentation](https://nodejs.dev/learn/introduction-to-nodejs).</span>
 
 📌Note: also, you can use `puppeteer` without any extensions, but I strongly recommended use it with `puppeteer-extra` with `puppeteer-extra-plugin-stealth` to prevent website detection that you are using headless Chromium or that you are using [web driver](https://www.w3.org/TR/webdriver/). You can check it on [Chrome headless tests website](https://intoli.com/blog/not-possible-to-block-chrome-headless/chrome-headless-test.html). The screenshot below shows you a difference.
 
-![stealth](https://user-images.githubusercontent.com/64033139/171674554-d6027d3e-5fb2-44fb-88c7-4492851b43ff.png)
+![stealth](https://user-images.githubusercontent.com/64033139/173014238-eb8450d7-616c-42ae-8b2f-24eeb5fd5916.png)
 
 <h2 id='process'>Process</h2>
 
@@ -141,6 +143,8 @@ async function getPageResults(page) {
 |----|-----------|
 |`pageResults`|an array with information about all goods from page|
 |`page.evaluate(function () {`|is the Puppeteer method for injecting `function` in the page context and allows to return data directly from the browser|
+|[`document.querySelectorAll("ul .s-item__wrapper")`](https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll)|returns a static [NodeList](https://developer.mozilla.org/en-US/docs/Web/API/NodeList) representing a list of the document's elements that match the css selectors with class name `s-item__wrapper` which is any child of `ul` html element|
+|[`el.querySelector(".s-item__link")`](https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector)|returns the first html element with class name `s-item__link` which is any child of the `el` html element|
 |`.getAttribute("href")`|gets the `href` attribute value of the html element|
 |[`.trim()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/trim)|removes whitespace from both ends of a string|
         
@@ -195,8 +199,19 @@ async function getOrganicResults() {
 |`page.waitForTimeout(1000)`|waiting 1000 ms before continue|
 |`page.click("#gh-btn")`|this methods emulates mouse click on the html element with the `#gh-btn` selector|
 |`const isNextPage = await page.$(".pagination__next")`|in this line of code, we find the html element with the `.pagination__next` selector and save it in `isNextPage` constant|
+|`if (!isNextPage ┃┃ currentPage > pagesLimit) break`|in this line of code, we check that `isNextPage` is not equal to [`true`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean) (`!` character) and `currentPage` is greater than `pagesLimit`. And if the expression in brackets is `true` we run `break` which ends the `while` loop|
 |`organicResults.push(...(await getPageResults(page)))`|in this code, we use [spread syntax](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax) to split the array from result that was returned from `getPageResults` function into elements and add them in the end of `organicResults` array|
 |`browser.close()`|after all we close the browser instance|
+
+📌Note: in this case, we can skip 
+```javascript
+await page.waitForSelector("#gh-ac");
+await page.focus("#gh-ac");
+await page.keyboard.type(searchString);
+await page.waitForTimeout(1000);
+await page.click("#gh-btn");
+```
+and we can add search query directly in URL so there's no need to open the main page and then make the extra request to display product results. I write it because I wanted to show some helpful methods of `puppeteer`. But you can remove this code, change the `URL` constant to `https://www.ebay.com/sch/i.html?_nkw=${searchString}` and write `searchString` constant in [URI encoding](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURI) like `const searchString = encodeURI("playstation");`.
 
 Now we can launch our parser. To do this enter `node YOUR_FILE_NAME` in your command line. Where `YOUR_FILE_NAME` is the name of your `.js` file.
 
@@ -345,7 +360,7 @@ const getOrganicResults = ({ organic_results }) => {
 |`organic_results`|an array that we destructured from response|
 |`link, title, condition, price, shipping, thumbnail`|other data that we destructured from element of news_results array|
 |`thumbnail = "No image"`|we set default value `No image` if `thumbnail` is `undefined`|
-|`price: price && price.raw ? price.raw : `${price.from?.raw} - ${price.to?.raw}``|in this line we use [ternary operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Conditional_Operator) to set vailid price. If we can get `price` and data with `raw` key we set it to our `price`, otherwise in `price` we set `price.from` and `price.to`|
+|`price: price && price.raw ? price.raw : '${price.from?.raw} - ${price.to?.raw}'`|in this line we use [ternary operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Conditional_Operator) to set vailid price. If we can get `price` and data with `raw` key we set it to our `price`, otherwise in `price` we set `price.from` and `price.to`|
 
 Next, we wrap the search method from the SerpApi library in a promise to further work with the search results:
 
