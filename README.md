@@ -8,7 +8,7 @@ Simply mention and add canonical link. Mention example: `by/from Dmitriy Zub on 
 
 ### Want to contribute?
 
-Follow [blog contribution guidelines](https://github.com/dimitryzub/serpapi-blog-posts-archive/wiki/Blog-contribution).
+Follow [blog contribution guidelines](https://github.com/dimitryzub/serpapi-blog-posts-archive/wiki#steps-to-contribute).
 
 Follow [typo of other errors contribution guidelines](https://github.com/dimitryzub/serpapi-blog-posts-archive/wiki#-other-contribution).
 
