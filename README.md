@@ -16,4 +16,4 @@ Follow [typo of other errors contribution guidelines](https://github.com/dimitry
 
 ### Licence
 
-[Creative Commons Zero v1.0 Universal](https://github.com/dimitryzub/serpapi-blog-posts-archive/blob/main/LICENSE)
+[BSD-3-Clause license](https://github.com/dimitryzub/serpapi-blog-posts-archive/blob/main/LICENSE)
