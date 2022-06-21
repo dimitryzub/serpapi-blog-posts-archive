@@ -15,24 +15,25 @@ The Gif below illustrates the approach of selecting different parts of the resul
 
 ![how](https://user-images.githubusercontent.com/64033139/174762205-b5c81b51-423d-47b3-aa66-84d27de09db8.gif)
 
+📌Note: you can get user ID from Google Scholar using my guide [How to scrape Google Scholar profiles results with Node.js](https://serpapi.com/blog/p/4ca36c41-4dda-4782-bb41-0b4562010a60/).
+
 <h2 id='full_code'>Full code</h2>
 
 ```javascript
 const cheerio = require("cheerio");
 const axios = require("axios");
 
-const searchString = "artificial intelligence";                         // what we want to search
-const encodedString = encodeURI(searchString);                          // what we want to search for in URI encoding
+const user = "6ZiRSwQAAAAJ";                                       // the ID of the author we want to scrape
 
 const domain = `http://scholar.google.com`;
 
 const AXIOS_OPTIONS = {
   headers: {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36",
-  },                                                                  // adding the User-Agent header as one way to prevent the request from being blocked
+  },                                                              // adding the User-Agent header as one way to prevent the request from being blocked
   params: {
-    q: encodedString,                                                 // our encoded search string
-    hl: "en",                                                         // parameter defines the language to use for the Google search
+    user,
+    hl: "en",                                                     // parameter defines the language to use for the Google search
   },
 };
 
@@ -42,33 +43,83 @@ function buildValidLink(rawLink) {
   return domain + rawLink;
 }
 
-function getScholarOrganicResults() {
-  return axios.get(`${domain}/scholar`, AXIOS_OPTIONS).then(function ({ data }) {
+function getScholarAuthorInfo() {
+  return axios.get(`${domain}/citations`, AXIOS_OPTIONS).then(function ({ data }) {
     let $ = cheerio.load(data);
 
-    const organicResults = Array.from($(".gs_r.gs_scl")).map((el) => {
-      const cited_by_rawLink = $(el).find(".gs_fl > a:nth-child(3)").attr("href");
-      const related_articles_rawLink = $(el).find(".gs_fl > a:nth-child(4)").attr("href");
-      const all_versions_rawLink = $(el).find(".gs_fl > a:nth-child(5)").attr("href");
-      const cited_by = buildValidLink(cited_by_rawLink);
-      const related_articles = buildValidLink(related_articles_rawLink);
-      const all_versions = buildValidLink(all_versions_rawLink);
-      return {
-        title: $(el).find(".gs_rt").text().trim(),
-        link: $(el).find(".gs_rt a").attr("href") || "link not available",
-        publication_info: $(el).find(".gs_a").text().trim(),
-        snippet: $(el).find(".gs_rs").text().trim().replace("\n", ""),
-        document: $(el).find(".gs_or_ggsm a").attr("href") || "document not available",
-        cited_by,
-        related_articles,
-        all_versions,
-      };
-    });
-    return organicResults;
+    return {
+      name: $("#gsc_prf_in").text().trim(),
+      photo: buildValidLink($("#gsc_prf_pup-img").attr("src")),
+      affiliations: $(".gsc_prf_il:nth-child(2)").text().trim(),
+      website: $(".gsc_prf_ila").attr("href") || "website not available",
+      interests: Array.from($("#gsc_prf_int a")).map((interest) => {
+        return {
+          title: $(interest).text().trim(),
+          link: buildValidLink($(interest).attr("href")),
+        };
+      }),
+      articles: Array.from($(".gsc_a_tr")).map((el) => {
+        return {
+          title: $(el).find(".gsc_a_at").text().trim(),
+          link: buildValidLink($(el).find(".gsc_a_at").attr("href")),
+          authors: $(el).find(".gs_gray:first-of-type").text().trim(),
+          publication: $(el).find(".gs_gray:last-of-type").text().trim(),
+          citedBy: {
+            link: $(el).find(".gsc_a_ac").attr("href"),
+            cited: $(el).find(".gsc_a_ac").text().trim(),
+          },
+          year: $(el).find(".gsc_a_h").text().trim(),
+        };
+      }),
+      table: {
+        citations: {
+          all: $("#gsc_rsb_st tr:nth-child(1) td:nth-child(2)").text().trim(),
+          since2017: $("#gsc_rsb_st tr:nth-child(1) td:nth-child(3)").text().trim(),
+        },
+        hIndex: {
+          all: $("#gsc_rsb_st tr:nth-child(2) td:nth-child(2)").text().trim(),
+          since2017: $("#gsc_rsb_st tr:nth-child(2) td:nth-child(3)").text().trim(),
+        },
+        i10Index: {
+          all: $("#gsc_rsb_st tr:nth-child(3) td:nth-child(2)").text().trim(),
+          since2017: $("#gsc_rsb_st tr:nth-child(3) td:nth-child(3)").text().trim(),
+        },
+      },
+      graph: Array.from($(".gsc_md_hist_b .gsc_g_t")).map((el, i) => {
+        return {
+          year: $(el).text().trim(),
+          citations: $(Array.from($(".gsc_md_hist_b .gsc_g_al"))[i])
+            .text()
+            .trim(),
+        };
+      }),
+      publicAccess: {
+        link: buildValidLink($("#gsc_lwp_mndt_lnk").attr("href")),
+        available: $(Array.from($(".gsc_rsb_m_a"))[0])
+          .text()
+          .trim(),
+        notAvailable: $(Array.from($(".gsc_rsb_m_na"))[0])
+          .text()
+          .trim(),
+      },
+      coAuthors: Array.from($("#gsc_rsb_co .gsc_rsb_aa")).map((el) => {
+        const link = buildValidLink($(el).find(".gsc_rsb_a_desc a").attr("href"));
+        const pattern = /user=(?<id>[^&]+)/gm;                                  //https://regex101.com/r/oxoQEj/1
+        const author_id = link.match(pattern)[0].replace("user=", "");
+        return {
+          name: $(el).find(".gsc_rsb_a_desc a").text().trim(),
+          link,
+          author_id,
+          photo: buildValidLink($(el).find(".gs_pp_df").attr("data-src")),
+          affiliations: $(el).find(".gsc_rsb_a_ext").text().trim(),
+          email: $(el).find(".gsc_rsb_a_ext2")?.text().trim() || "email not available",
+        };
+      }),
+    };
   });
 }
 
-getScholarOrganicResults().then(console.log);
+getScholarAuthorInfo().then(console.log);
 ```
 
 <h3 id='code_explanation'>Code explanation</h3>
@@ -85,27 +136,19 @@ const axios = require("axios");
 |[`cheerio`](https://www.npmjs.com/package/cheerio)|library for parsing the html page and access the necessary selectors|
 |[`axios`](https://www.npmjs.com/package/axios)|library for requesting the desired html document|
 
-Next, we write in constants what we want to search for and encode our text into a URI string:
+Next, we write in constants user ID and the necessary parameters for making a request:
 
 ```javascript
-const searchString = "artificial intelligence";
-const encodedString = encodeURI(searchString);
-```
+const user = "6ZiRSwQAAAAJ";
 
-|Code|Explanation|
-|----|-----------|
-|`searchString`|what we want to search|
-|`encodedString`|what we want to search for in [URI encoding](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURI)|
+const domain = `http://scholar.google.com`;
 
-Next, we write down the necessary parameters for making a request:
-
-```javascript
 const AXIOS_OPTIONS = {
   headers: {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36",
   },
   params: {
-    q: encodedString,
+    user,
     hl: "en",
   },
 };
@@ -113,9 +156,9 @@ const AXIOS_OPTIONS = {
 
 |Code|Explanation|
 |----|-----------|
+|`user`|user ID from Google Scholar|
 |`headers`|[HTTP headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers) let the client and the server pass additional information with an HTTP request or response|
 |[`User-Agent`](https://developer.mozilla.org/en-US/docs/Glossary/User_agent)|is used to act as a "real" user visit. Default axios requests user-agent is `axios/0.27.2` so websites understand that it's a script that sends a request and might block it. [Check what's your user-agent](https://www.whatismybrowser.com/detect/what-is-my-user-agent/).|
-|`q`|encoded in URI search query|
 |`hl`|parameter defines the language to use for the Google search|
 
 Next, we write a function that helps us change the raw links to the correct links:
@@ -128,34 +171,84 @@ function buildValidLink(rawLink) {
 }
 ```
 
-We need to do this with links because they are of different types. For example, some links start with "/scholar", some already have a complete and correct link, and some no links.
+We need to do this with links because they are of different types. For example, some links start with "/citations", some already have a complete and correct link, and some no links.
         
 And finally a function to get the necessary information:
 
 ```javascript
-function getScholarInfo() {
-  return axios.get(`${domain}/scholar`, AXIOS_OPTIONS).then(function ({ data }) {
+function getScholarAuthorInfo() {
+  return axios.get(`${domain}/citations`, AXIOS_OPTIONS).then(function ({ data }) {
     let $ = cheerio.load(data);
 
-    const organicResults = Array.from($(".gs_r.gs_scl")).map((el) => {
-      const cited_by_rawLink = $(el).find(".gs_fl > a:nth-child(3)").attr("href");
-      const related_articles_rawLink = $(el).find(".gs_fl > a:nth-child(4)").attr("href");
-      const all_versions_rawLink = $(el).find(".gs_fl > a:nth-child(5)").attr("href");
-      const cited_by = buildValidLink(cited_by_rawLink);
-      const related_articles = buildValidLink(related_articles_rawLink);
-      const all_versions = buildValidLink(all_versions_rawLink);
-      return {
-        title: $(el).find(".gs_rt").text().trim(),
-        link: $(el).find(".gs_rt a").attr("href") || "link not available",
-        publication_info: $(el).find(".gs_a").text().trim(),
-        snippet: $(el).find(".gs_rs").text().trim().replace("\n", ""),
-        document: $(el).find(".gs_or_ggsm a").attr("href") || "document not available",
-        cited_by,
-        related_articles,
-        all_versions,
-      };
-    });
-    return organicResults;
+    return {
+      name: $("#gsc_prf_in").text().trim(),
+      photo: buildValidLink($("#gsc_prf_pup-img").attr("src")),
+      affiliations: $(".gsc_prf_il:nth-child(2)").text().trim(),
+      website: $(".gsc_prf_ila").attr("href") || "website not available",
+      interests: Array.from($("#gsc_prf_int a")).map((interest) => {
+        return {
+          title: $(interest).text().trim(),
+          link: buildValidLink($(interest).attr("href")),
+        };
+      }),
+      articles: Array.from($(".gsc_a_tr")).map((el) => {
+        return {
+          title: $(el).find(".gsc_a_at").text().trim(),
+          link: buildValidLink($(el).find(".gsc_a_at").attr("href")),
+          authors: $(el).find(".gs_gray:first-of-type").text().trim(),
+          publication: $(el).find(".gs_gray:last-of-type").text().trim(),
+          citedBy: {
+            link: $(el).find(".gsc_a_ac").attr("href"),
+            cited: $(el).find(".gsc_a_ac").text().trim(),
+          },
+          year: $(el).find(".gsc_a_h").text().trim(),
+        };
+      }),
+      table: {
+        citations: {
+          all: $("#gsc_rsb_st tr:nth-child(1) td:nth-child(2)").text().trim(),
+          since2017: $("#gsc_rsb_st tr:nth-child(1) td:nth-child(3)").text().trim(),
+        },
+        hIndex: {
+          all: $("#gsc_rsb_st tr:nth-child(2) td:nth-child(2)").text().trim(),
+          since2017: $("#gsc_rsb_st tr:nth-child(2) td:nth-child(3)").text().trim(),
+        },
+        i10Index: {
+          all: $("#gsc_rsb_st tr:nth-child(3) td:nth-child(2)").text().trim(),
+          since2017: $("#gsc_rsb_st tr:nth-child(3) td:nth-child(3)").text().trim(),
+        },
+      },
+      graph: Array.from($(".gsc_md_hist_b .gsc_g_t")).map((el, i) => {
+        return {
+          year: $(el).text().trim(),
+          citations: $(Array.from($(".gsc_md_hist_b .gsc_g_al"))[i])
+            .text()
+            .trim(),
+        };
+      }),
+      publicAccess: {
+        link: buildValidLink($("#gsc_lwp_mndt_lnk").attr("href")),
+        available: $(Array.from($(".gsc_rsb_m_a"))[0])
+          .text()
+          .trim(),
+        notAvailable: $(Array.from($(".gsc_rsb_m_na"))[0])
+          .text()
+          .trim(),
+      },
+      coAuthors: Array.from($("#gsc_rsb_co .gsc_rsb_aa")).map((el) => {
+        const link = buildValidLink($(el).find(".gsc_rsb_a_desc a").attr("href"));
+        const pattern = /user=(?<id>[^&]+)/gm;
+        const author_id = link.match(pattern)[0].replace("user=", "");
+        return {
+          name: $(el).find(".gsc_rsb_a_desc a").text().trim(),
+          link,
+          author_id,
+          photo: buildValidLink($(el).find(".gs_pp_df").attr("data-src")),
+          affiliations: $(el).find(".gsc_rsb_a_ext").text().trim(),
+          email: $(el).find(".gsc_rsb_a_ext2")?.text().trim() || "email not available",
+        };
+      }),
+    };
   });
 }
 ```
@@ -163,86 +256,199 @@ function getScholarInfo() {
 |Code|Explanation|
 |----|-----------|
 |`function ({ data })`|we received the response from axios request that have `data` key that we [destructured](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment) (this entry is equal to `function (response)` and in the next line `cheerio.load(response.data)`)|
-|`organicResults`|an array with organic results from page|
 |`.attr('href')`|gets the `href` attribute value of the html element|
-|`$(el).find('.gs_rt')`|finds element with class name `gs_rt` in all child elements and their children of `el` html element|
+|`$(el).find('.gsc_a_at')`|finds element with class name `gsc_a_at` in all child elements and their children of `el` html element|
 |`.text()`|gets the raw text of html element|
 |[`.trim()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/trim)|removes whitespace from both ends of a string|
-|`replace('\n', '')`|in this code we remove [new line](https://en.wikipedia.org/wiki/Newline#In_programming_languages) symbol|
+|`pattern`|a RegEx pattern for search and define author id. [See what it allows you to find](https://regex101.com/r/oxoQEj/1)|
+|`link.match(pattern)[0].replace('user=', '')`|in this line, we find a substring that matches `pattern`, take `0` element from the matches array and remove "user=" part|
 
 Now we can launch our parser. To do this enter `node YOUR_FILE_NAME` in your command line. Where `YOUR_FILE_NAME` is the name of your `.js` file.
 
 <h2 id='output'>Output</h2>
 
 ```json
-[
-   {
-      "title":"[HTML][HTML] Artificial intelligence and algorithmic bias: implications for health systems",
-      "link":"https://www.ncbi.nlm.nih.gov/pmc/articles/pmc6875681/",
-      "publication_info":"T Panch, H Mattie, R Atun - Journal of global health, 2019 - ncbi.nlm.nih.gov",
-      "snippet":"A consumer study of an image search on a popular search engine revealed that 11% of results for the term “CEO” were female [6]. At the time, 20% of CEO’s in the US were women [7]. …",
-      "document":"https://www.ncbi.nlm.nih.gov/pmc/articles/pmc6875681/",
-      "cited_by":"http://scholar.google.com/scholar?cites=2905556560707838221&as_sdt=2005&sciodt=0,5&hl=en",
-      "related_articles":"http://scholar.google.com/scholar?q=related:DeHLM0ycUigJ:scholar.google.com/&scioq=artificial%2520intelligence&hl=en&as_sdt=0,5",
-      "all_versions":"http://scholar.google.com/scholar?cluster=2905556560707838221&hl=en&as_sdt=0,5"
+{
+   "name":"Gustavo E. Scuseria",
+   "photo":"https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=6ZiRSwQAAAAJ&citpid=2",
+   "affiliations":"Welch Professor of Chemistry, Physics & Astronomy, and Materials Science & NanoEngineering",
+   "website":"http://scuseria.rice.edu/",
+   "interests":[
+      {
+         "title":"Quantum Chemistry",
+         "link":"http://scholar.google.com/citations?view_op=search_authors&hl=en&mauthors=label:quantum_chemistry"
+      },
+      {
+         "title":"Electronic Structure",
+         "link":"http://scholar.google.com/citations?view_op=search_authors&hl=en&mauthors=label:electronic_structure"
+      },
+      ... and other interests
+   ],
+   "articles":[
+      {
+         "title":"Gaussian",
+         "link":"http://scholar.google.com/citations?view_op=view_citation&hl=en&user=6ZiRSwQAAAAJ&citation_for_view=6ZiRSwQAAAAJ:zYLM7Y9cAGgC",
+         "authors":"M Frisch, GW Trucks, HB Schlegel, GE Scuseria, MA Robb, ...",
+         "publication":"Inc., Wallingford, CT 200, 2009",
+         "citedBy":{
+            "link":"https://scholar.google.com/scholar?oi=bibs&hl=en&cites=12649774174384111814,14968720898351466124,2542640079890340298,8878124810051097364,2098631159866273549,2628790197996155063,9956613247733821950,12319774160759231510,10858305733441610093,6078020929247912320,732977129500792336,14993646544388831080,15565517274675135746,15250043469802589020,1808091898519134639,4924449844119900931,7042231487572549326,15997103006766735356,1383260141329079090,9449439637290636341,15798026778807799939,8499548159092922473,17327920478782103127,17012586779140016045,15565399274538950872,3036342632434523386,551261585751727105,149700165324054213,2578529946445560518",
+            "cited":"120296"
+         },
+         "year":"2009"
+      },
+      {
+         "title":"Gaussian 03, revision C. 02",
+         "link":"http://scholar.google.com/citations?view_op=view_citation&hl=en&user=6ZiRSwQAAAAJ&citation_for_view=6ZiRSwQAAAAJ:oC1yQlCKEqoC",
+         "authors":"MJ Frisch, GW Trucks, HB Schlegel, GE Scuseria, MA Robb, ...",
+         "publication":"Gaussian, Inc., Wallingford, CT, 2004",
+         "citedBy":{
+            "link":"https://scholar.google.com/scholar?oi=bibs&hl=en&cites=5576070979585392002,14227769557982606857",
+            "cited":"25832"
+         },
+         "year":"2004"
+      },
+      ... and other articles
+   ],
+   "table":{
+      "citations":{
+         "all":"295108",
+         "since2017":"113669"
+      },
+      "hIndex":{
+         "all":"139",
+         "since2017":"76"
+      },
+      "i10Index":{
+         "all":"552",
+         "since2017":"357"
+      }
    },
-   {
-      "title":"[PDF][PDF] The impact of artificial intelligence on international trade",
-      "link":"https://www.hinrichfoundation.com/media/2bxltgzf/meltzerai-and-trade_final.pdf",
-      "publication_info":"JP Meltzer - Brookings Institute, 2018 - hinrichfoundation.com",
-      "snippet":"Artificial intelligence (AI) stands to have a transformative impact on international trade. Already, specific applications in areas such as data analytics and translation services are …",
-      "document":"https://www.hinrichfoundation.com/media/2bxltgzf/meltzerai-and-trade_final.pdf",
-      "cited_by":"http://scholar.google.com/scholar?cites=7020069348513013331&as_sdt=2005&sciodt=0,5&hl=en",
-      "related_articles":"http://scholar.google.com/scholar?q=related:U9656OBLbGEJ:scholar.google.com/&scioq=artificial%2520intelligence&hl=en&as_sdt=0,5",
-      "all_versions":"http://scholar.google.com/scholar?cluster=7020069348513013331&hl=en&as_sdt=0,5"
-   }, 
-   ...and other results
-]
+   "graph":[
+      {
+         "year":"1993",
+         "citations":"771"
+      },
+      {
+         "year":"1994",
+         "citations":"782"
+      },
+      ... and other years
+   ],
+   "publicAccess":{
+      "link":"http://scholar.google.com/citations?view_op=list_mandates&hl=en&user=6ZiRSwQAAAAJ",
+      "available":"89 articles",
+      "notAvailable":"5 articles"
+   },
+   "coAuthors":[
+      {
+         "name":"John P. Perdew",
+         "link":"http://scholar.google.com/citations?user=09nv75wAAAAJ&hl=en",
+         "author_id":"09nv75wAAAAJ",
+         "photo":"https://scholar.googleusercontent.com/citations?view_op=small_photo&user=09nv75wAAAAJ&citpid=2",
+         "affiliations":"Temple UniversityVerified email at temple.edu",
+         "email":"Verified email at temple.edu"
+      },
+      {
+         "name":"Viktor N. Staroverov",
+         "link":"http://scholar.google.com/citations?user=eZqrRYEAAAAJ&hl=en",
+         "author_id":"eZqrRYEAAAAJ",
+         "photo":"https://scholar.googleusercontent.com/citations?view_op=small_photo&user=eZqrRYEAAAAJ&citpid=2",
+         "affiliations":"Professor, The University of Western OntarioVerified email at uwo.ca",
+         "email":"Verified email at uwo.ca"
+      },
+      ... and other co-authors
+   ]
+}
 ```
 
-<h2 id='serp_api'>Google Scholar Organic Results API</h2>
+<h2 id='serp_api'>Google Scholar Author API</h2>
 
-Alternatively, you can use the [Google Scholar Organic Results API](https://serpapi.com/google-scholar-organic-results) from SerpApi. SerpApi is a free API with 100 search per month. If you need more searches, there are paid plans.
+Alternatively, you can use the [Google Scholar Author API](https://serpapi.com/google-scholar-author-api) from SerpApi. SerpApi is a free API with 100 search per month. If you need more searches, there are paid plans.
 
 The difference is that you won't have to write code from scratch and maintain it. You may also experience blocking from Google and changing the selected selectors. Using a ready-made solution from SerpAPI, you just need to iterate the received JSON. [Check out the playground](https://serpapi.com/playground).
 
 First we need to install [`google-search-results-nodejs`](https://www.npmjs.com/package/google-search-results-nodejs). To do this you need to enter in your console: `npm i google-search-results-nodejs`
 
 ```javascript
+require("dotenv").config();
 const SerpApi = require("google-search-results-nodejs");
 const search = new SerpApi.GoogleSearch(process.env.API_KEY);             //your API key from serpapi.com
 
-const searchString = "artificial intelligence";                           // what we want to search
+const user = "6ZiRSwQAAAAJ";                                                      // the ID of the author we want to scrape
 
 const params = {
-  engine: "google_scholar",                             // search engine
-  q: searchString,                                      // search query
-  hl: "en",                                             // Parameter defines the language to use for the Google search
+  engine: "google_scholar_author",                                                // search engine
+  author_id: user,                                                                // author ID
+  hl: "en",                                                                       // Parameter defines the language to use for the Google search
 };
 
-const getScholarData = function ({ organic_results }) {
-  return organic_results.map((result) => {
-    const { title, link = "link not available", snippet, publication_info, inline_links, resources } = result;
-    return {
-      title,
-      link,
-      publication_info: publication_info?.summary,
-      snippet,
-      document: resources?.map((el) => el.link)[0] || "document not available",
-      cited_by: inline_links?.cited_by?.link || "link not available",
-      related_articles: inline_links?.related_pages_link || "link not available",
-      all_versions: inline_links?.versions?.link || "link not available",
-    };
+const getScholarAuthorData = function ({ author, articles, cited_by, public_access: publicAccess, co_authors }) {
+  const { name, thumbnail: photo, affiliations, website = "website not available", interests } = author;
+  const { table, graph } = cited_by;
+  return {
+    name,
+    photo,
+    affiliations,
+    website,
+    interests:
+      interests?.map((interest) => {
+        const { title, link = "link not available" } = interest;
+        return {
+          title,
+          link,
+        };
+      }) || "no interests",
+    articles: articles?.map((article) => {
+      const { title, link = "link not available", authors, publication, cited_by, year } = article;
+      return {
+        title,
+        link,
+        authors,
+        publication,
+        citedBy: {
+          link: cited_by.link,
+          cited: cited_by.value,
+        },
+        year,
+      };
+    }),
+    table: {
+      citations: {
+        all: table[0].citations.all,
+        since2017: table[0].citations.since_2017,
+      },
+      hIndex: {
+        all: table[1].h_index.all,
+        since2017: table[1].h_index.since_2017,
+      },
+      i10Index: {
+        all: table[2].i10_index.all,
+        since2017: table[2].i10_index.since_2017,
+      },
+    },
+    graph,
+    publicAccess,
+    coAuthors: co_authors?.map((result) => {
+      const { name, link = "link not available", thumbnail: photo, affiliations, email = "no email info", author_id } = result;
+      return {
+        name,
+        link,
+        author_id,
+        photo,
+        affiliations,
+        email,
+      };
+    }),
+  };
+};
+
+const getJson = () => {
+  return new Promise((resolve) => {
+    search.json(params, resolve);
   });
 };
 
-const getJson = (params) => {
-  return new Promise((resolve) => {
-    search.json(params, resolve);
-  })
-}
-
-getJson(params).then(getScholarData).then(console.log)
+getJson().then(getScholarAuthorData).then(console.log);
 ```
 
 <h3 id='serp_api_code_explanation'>Code explanation</h3>
@@ -263,91 +469,203 @@ const search = new SerpApi.GoogleSearch(API_KEY);
 Next, we write down what we want to search and the necessary parameters for making a request:
 
 ```javascript
-const searchString = "artificial intelligence";
+const user = "6ZiRSwQAAAAJ";
 
 const params = {
-  engine: "google_scholar",
-  q: searchString,
+  engine: "google_scholar_author",
+  author_id: user,
   hl: "en",
 };
 ```
 
 |Code|Explanation|
 |----|-----------|
-|`searchString`|what we want to search|
+|`user`|user ID from Google Scholar|
 |`engine`|search engine|
-|`q`|search query|
 |`hl`|parameter defines the language to use for the Google search|
 
 Next, we write a callback function in which we describe what data we need from the result of our request:
 
 ```javascript
-const getScholarData = function ({ organic_results }) {
-  return organic_results.map((result) => {
-    const { title, link = "link not available", snippet, publication_info, inline_links, resources } = result;
-    return {
-      title,
-      link,
-      publication_info: publication_info?.summary,
-      snippet,
-      document: resources?.map((el) => el.link)[0] || "document not available",
-      cited_by: inline_links?.cited_by?.link || "link not available",
-      related_articles: inline_links?.related_pages_link || "link not available",
-      all_versions: inline_links?.versions?.link || "link not available",
-    };
-  });
+const getScholarAuthorData = function ({ author, articles, cited_by, public_access: publicAccess, co_authors }) {
+  const { name, thumbnail: photo, affiliations, website = "website not available", interests } = author;
+  const { table, graph } = cited_by;
+  return {
+    name,
+    photo,
+    affiliations,
+    website,
+    interests:
+      interests?.map((interest) => {
+        const { title, link = "link not available" } = interest;
+        return {
+          title,
+          link,
+        };
+      }) || "no interests",
+    articles: articles?.map((article) => {
+      const { title, link = "link not available", authors, publication, cited_by, year } = article;
+      return {
+        title,
+        link,
+        authors,
+        publication,
+        citedBy: {
+          link: cited_by.link,
+          cited: cited_by.value,
+        },
+        year,
+      };
+    }),
+    table: {
+      citations: {
+        all: table[0].citations.all,
+        since2017: table[0].citations.since_2017,
+      },
+      hIndex: {
+        all: table[1].h_index.all,
+        since2017: table[1].h_index.since_2017,
+      },
+      i10Index: {
+        all: table[2].i10_index.all,
+        since2017: table[2].i10_index.since_2017,
+      },
+    },
+    graph,
+    publicAccess,
+    coAuthors: co_authors?.map((result) => {
+      const { name, link = "link not available", thumbnail: photo, affiliations, email = "no email info", author_id } = result;
+      return {
+        name,
+        link,
+        author_id,
+        photo,
+        affiliations,
+        email,
+      };
+    }),
+  };
 };
 ```
 
 |Code|Explanation|
 |----|-----------|
-|`organic_results`|an array that we destructured from response|
-|`title, link, snippet, ..., resources`|data that we destructured from element of `organic_results` array|
-|`link = "link not available"`|we set default value `link not available` if `link` is `undefined`|
+|`author, articles, ..., co_authors`|data that we destructured from response|
+|`name, thumbnail, ..., interests`|data that we destructured from `author` object|
+|`thumbnail: photo`|we redefine destructured data `thumbnail` to new `photo`|
+|`website = "website not available"`|we set default value `website not available` if `website` is `undefined`|
 
 Next, we wrap the search method from the SerpApi library in a promise to further work with the search results and run it:
 
 ```javascript
-const getJson = (params) => {
+const getJson = () => {
   return new Promise((resolve) => {
     search.json(params, resolve);
   })
 }
 
-getJson(params).then(getKnowledgeGraph).then(console.log)
+getJson().then(getScholarAuthorData).then(console.log);
 ```
 
 <h2 id='serp_api_output'>Output</h2>
 
 ```json
-[
-   {
-      "title":"[HTML][HTML] Artificial intelligence and algorithmic bias: implications for health systems",
-      "link":"https://www.ncbi.nlm.nih.gov/pmc/articles/pmc6875681/",
-      "publication_info":"T Panch, H Mattie, R Atun - Journal of global health, 2019 - ncbi.nlm.nih.gov",
-      "snippet":"A consumer study of an image search on a popular search engine revealed that 11% of results for the term “CEO” were female [6]. At the time, 20% of CEO’s in the US were women [7]. …",
-      "document":"https://www.ncbi.nlm.nih.gov/pmc/articles/pmc6875681/",
-      "cited_by":"http://scholar.google.com/scholar?cites=2905556560707838221&as_sdt=2005&sciodt=0,5&hl=en",
-      "related_articles":"http://scholar.google.com/scholar?q=related:DeHLM0ycUigJ:scholar.google.com/&scioq=artificial%2520intelligence&hl=en&as_sdt=0,5",
-      "all_versions":"http://scholar.google.com/scholar?cluster=2905556560707838221&hl=en&as_sdt=0,5"
+{
+   "name":"Gustavo E. Scuseria",
+   "photo":"https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=6ZiRSwQAAAAJ&citpid=2",
+   "affiliations":"Welch Professor of Chemistry, Physics & Astronomy, and Materials Science & NanoEngineering",
+   "website":"http://scuseria.rice.edu/",
+   "interests":[
+      {
+         "title":"Quantum Chemistry",
+         "link":"https://scholar.google.com/citations?view_op=search_authors&hl=en&mauthors=label:quantum_chemistry"
+      },
+      {
+         "title":"Electronic Structure",
+         "link":"https://scholar.google.com/citations?view_op=search_authors&hl=en&mauthors=label:electronic_structure"
+      },
+      ... and other interests
+   ],
+   "articles":[
+      {
+         "title":"Gaussian",
+         "link":"https://scholar.google.com/citations?view_op=view_citation&hl=en&user=6ZiRSwQAAAAJ&citation_for_view=6ZiRSwQAAAAJ:zYLM7Y9cAGgC",
+         "authors":"M Frisch, GW Trucks, HB Schlegel, GE Scuseria, MA Robb, ...",
+         "publication":"Inc., Wallingford, CT 200, 2009",
+         "citedBy":{
+            "link":"https://scholar.google.com/scholar?oi=bibs&hl=en&cites=12649774174384111814,14968720898351466124,2542640079890340298,8878124810051097364,2098631159866273549,2628790197996155063,9956613247733821950,12319774160759231510,10858305733441610093,6078020929247912320,732977129500792336,14993646544388831080,15565517274675135746,15250043469802589020,1808091898519134639,4924449844119900931,7042231487572549326,15997103006766735356,1383260141329079090,9449439637290636341,15798026778807799939,8499548159092922473,17327920478782103127,17012586779140016045,15565399274538950872,3036342632434523386,551261585751727105,149700165324054213,2578529946445560518",
+            "cited":120296
+         },
+         "year":"2009"
+      },
+      {
+         "title":"Gaussian 03, revision C. 02",
+         "link":"https://scholar.google.com/citations?view_op=view_citation&hl=en&user=6ZiRSwQAAAAJ&citation_for_view=6ZiRSwQAAAAJ:oC1yQlCKEqoC",
+         "authors":"MJ Frisch, GW Trucks, HB Schlegel, GE Scuseria, MA Robb, ...",
+         "publication":"Gaussian, Inc., Wallingford, CT, 2004",
+         "citedBy":{
+            "link":"https://scholar.google.com/scholar?oi=bibs&hl=en&cites=5576070979585392002,14227769557982606857",
+            "cited":25832
+         },
+         "year":"2004"
+      },
+      ... and other articles
+   ],
+   "table":{
+      "citations":{
+         "all":295108,
+         "since2017":113669
+      },
+      "hIndex":{
+         "all":139,
+         "since2017":76
+      },
+      "i10Index":{
+         "all":552,
+         "since2017":357
+      }
    },
-   {
-      "title":"[PDF][PDF] The impact of artificial intelligence on international trade",
-      "link":"https://www.hinrichfoundation.com/media/2bxltgzf/meltzerai-and-trade_final.pdf",
-      "publication_info":"JP Meltzer - Brookings Institute, 2018 - hinrichfoundation.com",
-      "snippet":"Artificial intelligence (AI) stands to have a transformative impact on international trade. Already, specific applications in areas such as data analytics and translation services are …",
-      "document":"https://www.hinrichfoundation.com/media/2bxltgzf/meltzerai-and-trade_final.pdf",
-      "cited_by":"http://scholar.google.com/scholar?cites=7020069348513013331&as_sdt=2005&sciodt=0,5&hl=en",
-      "related_articles":"http://scholar.google.com/scholar?q=related:U9656OBLbGEJ:scholar.google.com/&scioq=artificial%2520intelligence&hl=en&as_sdt=0,5",
-      "all_versions":"http://scholar.google.com/scholar?cluster=7020069348513013331&hl=en&as_sdt=0,5"
+   "graph":[
+      {
+         "year":1993,
+         "citations":771
+      },
+      {
+         "year":1994,
+         "citations":782
+      },
+      ... and other years
+   ],
+   "publicAccess":{
+      "link":"https://scholar.google.com/citations?view_op=list_mandates&hl=en&user=6ZiRSwQAAAAJ",
+      "available":89,
+      "not_available":5
    },
-   ...and other results
-]
+   "coAuthors":[
+      {
+         "name":"John P. Perdew",
+         "link":"https://scholar.google.com/citations?user=09nv75wAAAAJ&hl=en",
+         "author_id":"09nv75wAAAAJ",
+         "photo":"https://scholar.googleusercontent.com/citations?view_op=small_photo&user=09nv75wAAAAJ&citpid=2",
+         "affiliations":"Temple University",
+         "email":"Verified email at temple.edu"
+      },
+      {
+         "name":"Viktor N. Staroverov",
+         "link":"https://scholar.google.com/citations?user=eZqrRYEAAAAJ&hl=en",
+         "author_id":"eZqrRYEAAAAJ",
+         "photo":"https://scholar.googleusercontent.com/citations?view_op=small_photo&user=eZqrRYEAAAAJ&citpid=2",
+         "affiliations":"Professor, The University of Western Ontario",
+         "email":"Verified email at uwo.ca"
+      },
+      ... and other co-authors
+   ]
+}
 ```
 
 <h2 id='links'>Links</h2>
 
-* [Code in the online IDE](https://replit.com/@MikhailZub/Google-Scholar-Organic-Results-scrape-NodeJS-SerpApi#index.js) 
+* [Code in the online IDE](https://replit.com/@MikhailZub/Google-Scholar-Author-NodeJS-SerpApi#index.js) 
 * [Google Scholar API](https://serpapi.com/google-scholar-api)
 
 If you want to see some project made with SerpApi, please write me a message.

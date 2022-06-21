@@ -1,6 +1,6 @@
 const withCheerio = require("./withCheerio");
 const withSerpApi = require("./withSerpApi");
 
-// withCheerio.getScholarOrganicResults().then(console.log);
+withCheerio.getScholarAuthorInfo().then(console.log);
 
-withSerpApi.getResults().then(console.log);
+// withSerpApi.getResults().then(console.log);

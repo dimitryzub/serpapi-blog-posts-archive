@@ -1,36 +1,80 @@
 const SerpApi = require("google-search-results-nodejs");
-const search = new SerpApi.GoogleSearch(process.env.API_KEY);         //your API key from serpapi.com
+const search = new SerpApi.GoogleSearch(process.env.API_KEY);                     //your API key from serpapi.com
 
-const searchString = "artificial intelligence";                       // what we want to search
+const user = "6ZiRSwQAAAAJ";                                                      // the ID of the author we want to scrape
 
 const params = {
-  engine: "google_scholar",                                           // search engine
-  q: searchString,                                                    // search query
-  hl: "en",                                                           // Parameter defines the language to use for the Google search
+  engine: "google_scholar_author",                                                // search engine
+  author_id: user,                                                                // author ID
+  hl: "en",                                                                       // Parameter defines the language to use for the Google search
 };
 
-const getScholarData = function ({ organic_results }) {
-  return organic_results.map((result) => {
-    const { title, link = "link not available", snippet, publication_info, inline_links, resources } = result;
-    return {
-      title,
-      link,
-      publication_info: publication_info?.summary,
-      snippet,
-      document: resources?.map((el) => el.link)[0] || "document not available",
-      cited_by: inline_links?.cited_by?.link || "link not available",
-      related_articles: inline_links?.related_pages_link || "link not available",
-      all_versions: inline_links?.versions?.link || "link not available",
-    };
-  });
+const getScholarAuthorData = function ({ author, articles, cited_by, public_access: publicAccess, co_authors }) {
+  const { name, thumbnail: photo, affiliations, website = "website not available", interests } = author;
+  const { table, graph } = cited_by;
+  return {
+    name,
+    photo,
+    affiliations,
+    website,
+    interests:
+      interests?.map((interest) => {
+        const { title, link = "link not available" } = interest;
+        return {
+          title,
+          link,
+        };
+      }) || "no interests",
+    articles: articles?.map((article) => {
+      const { title, link = "link not available", authors, publication, cited_by, year } = article;
+      return {
+        title,
+        link,
+        authors,
+        publication,
+        citedBy: {
+          link: cited_by.link,
+          cited: cited_by.value,
+        },
+        year,
+      };
+    }),
+    table: {
+      citations: {
+        all: table[0].citations.all,
+        since2017: table[0].citations.since_2017,
+      },
+      hIndex: {
+        all: table[1].h_index.all,
+        since2017: table[1].h_index.since_2017,
+      },
+      i10Index: {
+        all: table[2].i10_index.all,
+        since2017: table[2].i10_index.since_2017,
+      },
+    },
+    graph,
+    publicAccess,
+    coAuthors: co_authors?.map((result) => {
+      const { name, link = "link not available", thumbnail: photo, affiliations, email = "no email info", author_id } = result;
+      return {
+        name,
+        link,
+        author_id,
+        photo,
+        affiliations,
+        email,
+      };
+    }),
+  };
 };
 
-const getJson = (params) => {
+const getJson = () => {
   return new Promise((resolve) => {
     search.json(params, resolve);
   });
 };
 
 exports.getResults = () => {
-  return getJson(params).then(getScholarData);
+  return getJson().then(getScholarAuthorData);
 };
