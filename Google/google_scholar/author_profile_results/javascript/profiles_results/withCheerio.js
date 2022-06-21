@@ -31,9 +31,15 @@ function getHTML(link, options = AXIOS_OPTIONS.headers) {
 
 function fillProfilesData($) {
   const profiles = Array.from($(".gsc_1usr")).map((el) => {
+    const link = buildValidLink($(el).find(".gs_ai_name a").attr("href"));
+
+    const pattern = /user=(?<id>[^&]+)/gm                                   //https://regex101.com/r/oxoQEj/1
+    const author_id = link.match(pattern)[0].replace('user=', '')
+
     return {
       name: $(el).find(".gs_ai_name a").text().trim(),
-      link: buildValidLink($(el).find(".gs_ai_name a").attr("href")),
+      link,
+      author_id,
       photo: $(el).find(".gs_ai_pho img").attr("src"),
       affiliations: $(el).find(".gs_ai_aff").text().trim().replace("\n", ""),
       email: $(el).find(".gs_ai_eml").text().trim() || "email not available",

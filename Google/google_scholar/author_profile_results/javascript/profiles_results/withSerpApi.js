@@ -14,10 +14,11 @@ const params = {
 
 const getScholarProfilesData = function ({ profiles }) {
   return profiles.map((result) => {
-    const { name, link = "link not available", thumbnail, affiliations, email = "no email info", cited_by, interests } = result;
+    const { name, link = "link not available", author_id, thumbnail, affiliations, email = "no email info", cited_by, interests } = result;
     return {
       name,
       link,
+      author_id,
       photo: thumbnail,
       affiliations,
       email,

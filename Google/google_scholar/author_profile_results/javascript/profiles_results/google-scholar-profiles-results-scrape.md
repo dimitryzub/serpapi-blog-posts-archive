@@ -51,9 +51,15 @@ function getHTML(link, options = AXIOS_OPTIONS.headers) {
 
 function fillProfilesData($) {
   const profiles = Array.from($(".gsc_1usr")).map((el) => {
+    const link = buildValidLink($(el).find(".gs_ai_name a").attr("href"));
+
+    const pattern = /user=(?<id>[^&]+)/gm                                   //https://regex101.com/r/oxoQEj/1
+    const author_id = link.match(pattern)[0].replace('user=', '')
+
     return {
       name: $(el).find(".gs_ai_name a").text().trim(),
-      link: buildValidLink($(el).find(".gs_ai_name a").attr("href")),
+      link,
+      author_id,
       photo: $(el).find(".gs_ai_pho img").attr("src"),
       affiliations: $(el).find(".gs_ai_aff").text().trim().replace("\n", ""),
       email: $(el).find(".gs_ai_eml").text().trim() || "email not available",
@@ -177,9 +183,15 @@ Next, we write down a function for getting information from page:
 ```javascript
 function fillProfilesData($) {
   const profiles = Array.from($(".gsc_1usr")).map((el) => {
+    const link = buildValidLink($(el).find(".gs_ai_name a").attr("href"));
+
+    const pattern = /user=(?<id>[^&]+)/gm
+    const author_id = link.match(pattern)[0].replace('user=', '')
+
     return {
       name: $(el).find(".gs_ai_name a").text().trim(),
-      link: buildValidLink($(el).find(".gs_ai_name a").attr("href")),
+      link,
+      author_id,
       photo: $(el).find(".gs_ai_pho img").attr("src"),
       affiliations: $(el).find(".gs_ai_aff").text().trim().replace("\n", ""),
       email: $(el).find(".gs_ai_eml").text().trim() || "email not available",
@@ -208,6 +220,8 @@ function fillProfilesData($) {
 |----|-----------|
 |`profiles`|an array with profiles results from page|
 |`.attr('href')`|gets the `href` attribute value of the html element|
+|`pattern`|a RegEx pattern for search and define author id. [See what it allows you to find](https://regex101.com/r/oxoQEj/1)|
+|`link.match(pattern)[0].replace('user=', '')`|in this line, we find a substring that matches `pattern`, take `0` element from the matches array and remove "user=" part|
 |`$(el).find('.gs_ai_aff')`|finds element with class name `gs_ai_aff` in all child elements and their children of `el` html element|
 |`.text()`|gets the raw text of html element|
 |[`.trim()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/trim)|removes whitespace from both ends of a string|
@@ -315,10 +329,11 @@ const params = {
 
 const getScholarProfilesData = function ({ profiles }) {
   return profiles.map((result) => {
-    const { name, link = "link not available", thumbnail, affiliations, email = "no email info", cited_by, interests } = result;
+    const { name, link = "link not available", author_id, thumbnail, affiliations, email = "no email info", cited_by, interests } = result;
     return {
       name,
       link,
+      author_id,
       photo: thumbnail,
       affiliations,
       email,
@@ -402,10 +417,11 @@ Next, we write a callback function in which we describe what data we need from t
 ```javascript
 const getScholarProfilesData = function ({ profiles }) {
   return profiles.map((result) => {
-    const { name, link = "link not available", thumbnail, affiliations, email = "no email info", cited_by, interests } = result;
+    const { name, link = "link not available", author_id, thumbnail, affiliations, email = "no email info", cited_by, interests } = result;
     return {
       name,
       link,
+      author_id,
       photo: thumbnail,
       affiliations,
       email,
