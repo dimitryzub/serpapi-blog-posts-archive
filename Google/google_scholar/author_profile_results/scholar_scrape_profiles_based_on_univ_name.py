@@ -99,11 +99,11 @@ def serpapi_scrape_all_profiles_from_university(label: str, university_name: str
                 "interests": interests,
             })
 
-            if "next" in profile_results.get("pagination", {}):
-                # split URL in parts as a dict and update search "params" variable to a new page that will be passed to GoogleSearch()
-                search.params_dict.update(dict(parse_qsl(urlsplit(profile_results.get("pagination").get("next")).query)))
-            else:
-                profiles_is_present = False
+        if "next" in profile_results.get("pagination", {}):
+            # split URL in parts as a dict and update search "params" variable to a new page that will be passed to GoogleSearch()
+            search.params_dict.update(dict(parse_qsl(urlsplit(profile_results.get("pagination").get("next")).query)))
+        else:
+            profiles_is_present = False
 
     return profile_results_data
 
