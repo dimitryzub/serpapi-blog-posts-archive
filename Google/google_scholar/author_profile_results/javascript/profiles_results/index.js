@@ -1,6 +1,6 @@
 const withCheerio = require("./withCheerio");
 const withSerpApi = require("./withSerpApi");
 
-withCheerio.startScrape().then(console.log);
+withCheerio.startScrape().then((result) => console.dir(result, { depth: null }));
 
-// withSerpApi.getResults().then(console.log);
+// withSerpApi.getResults().then((result) => console.dir(result, { depth: null }));

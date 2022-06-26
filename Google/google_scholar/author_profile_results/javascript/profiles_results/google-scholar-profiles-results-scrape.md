@@ -10,8 +10,8 @@ First, we need to create a Node.js* project and add [`npm`](https://www.npmjs.co
 
 <h2 id='process'>Process</h2>
 
-[SelectorGadget Chrome extension](https://chrome.google.com/webstore/detail/selectorgadget/mhjhnkcfbdhnjickkkdbjoemdmbfginb) was used to grab CSS selectors by clicking on the desired element in the browser. If you have any struggles understanding this, we have a dedicated [Web Scraping with CSS Selectors blog post](https://serpapi.com/blog/web-scraping-with-css-selectors-using-python/) at SerpApi.
-The Gif below illustrates the approach of selecting different parts of the results.
+[SelectorGadget Chrome extension](https://chrome.google.com/webstore/detail/selectorgadget/mhjhnkcfbdhnjickkkdbjoemdmbfginb) was used to grab CSS selectors by clicking on the desired element in the browser which then returns a matched CSS selector. If you have any struggles understanding this, we have a dedicated [Web Scraping with CSS Selectors blog post](https://serpapi.com/blog/web-scraping-with-css-selectors-using-python/) at SerpApi.
+The GIF below illustrates the approach of selecting different HTML elements using SelectorGadget to get a CSS selector which we'll be calling using `cheerio`.
 
 ![how](https://user-images.githubusercontent.com/64033139/174563747-ecc0054e-6372-4c70-8210-fea68d0643f5.gif)
 
@@ -23,7 +23,7 @@ const axios = require("axios");
 
 const searchString = "astronomy";                        // what we want to search
 const encodedString = encodeURI(searchString);          // what we want to search for in URI encoding
-const pagesLimit = 5;                                   // limit of pages for getting info
+const pagesLimit = Infinity;                            // limit of pages for getting info
 
 const domain = `http://scholar.google.com`;
 
@@ -53,13 +53,13 @@ function fillProfilesData($) {
   const profiles = Array.from($(".gsc_1usr")).map((el) => {
     const link = buildValidLink($(el).find(".gs_ai_name a").attr("href"));
 
-    const pattern = /user=(?<id>[^&]+)/gm                                   //https://regex101.com/r/oxoQEj/1
-    const author_id = link.match(pattern)[0].replace('user=', '')
+    const authorIdPattern = /user=(?<id>[^&]+)/gm                                   //https://regex101.com/r/oxoQEj/1
+    const authorId = link.match(authorIdPattern)[0].replace('user=', '')
 
     return {
       name: $(el).find(".gs_ai_name a").text().trim(),
       link,
-      author_id,
+      authorId,
       photo: $(el).find(".gs_ai_pho img").attr("src"),
       affiliations: $(el).find(".gs_ai_aff").text().trim().replace("\n", ""),
       email: $(el).find(".gs_ai_eml").text().trim() || "email not available",
@@ -94,11 +94,13 @@ function getScholarProfilesInfo(link) {
 async function startScrape() {
   const allProfiles = [];
   let nextPageLink;
-  for (let i = 0; i < pagesLimit; i++) {
+  let currentPage = 1;
+  while (true) {
     const data = await getScholarProfilesInfo(nextPageLink);
     allProfiles.push(...data.profiles);
     nextPageLink = data.isNextPage;
-    if (nextPageLink === "link not available") break;
+    currentPage++;
+    if (nextPageLink === "link not available" || currentPage > pagesLimit) break;
   }
   return allProfiles;
 }
@@ -125,14 +127,14 @@ Next, we write in constants what we want to search for and encode our text into 
 ```javascript
 const searchString = "astronomy";
 const encodedString = encodeURI(searchString);
-const pagesLimit = 5;
+const pagesLimit = Infinity;
 ```
 
 |Code|Explanation|
 |----|-----------|
 |`searchString`|what we want to search|
 |`encodedString`|what we want to search for in [URI encoding](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURI)|
-|`pagesLimit`|limit of pages for getting info|
+|`pagesLimit`|limit of pages for getting info. If you want to limit the number of pages for getting info you need to define the last page number in this|
 
 Next, we write down the necessary parameters for making a request:
 
@@ -157,7 +159,7 @@ const AXIOS_OPTIONS = {
 |`hl`|parameter defines the language to use for the Google search|
 |`view_op`|parameter defines what kind of search we want to use|
 
-Next, we write a function that helps us change the raw links to the correct links:
+Next, we write a function that helps us change the raw links to the correct links. We need to do this with links because some of them start with "/citations" and some don't have links:
 
 ```javascript
 function buildValidLink(rawLink) {
@@ -185,13 +187,13 @@ function fillProfilesData($) {
   const profiles = Array.from($(".gsc_1usr")).map((el) => {
     const link = buildValidLink($(el).find(".gs_ai_name a").attr("href"));
 
-    const pattern = /user=(?<id>[^&]+)/gm
-    const author_id = link.match(pattern)[0].replace('user=', '')
+    const authorIdPattern = /user=(?<id>[^&]+)/gm
+    const authorId = link.match(authorIdPattern)[0].replace('user=', '')
 
     return {
       name: $(el).find(".gs_ai_name a").text().trim(),
       link,
-      author_id,
+      authorId,
       photo: $(el).find(".gs_ai_pho img").attr("src"),
       affiliations: $(el).find(".gs_ai_aff").text().trim().replace("\n", ""),
       email: $(el).find(".gs_ai_eml").text().trim() || "email not available",
@@ -220,8 +222,8 @@ function fillProfilesData($) {
 |----|-----------|
 |`profiles`|an array with profiles results from page|
 |`.attr('href')`|gets the `href` attribute value of the html element|
-|`pattern`|a RegEx pattern for search and define author id. [See what it allows you to find](https://regex101.com/r/oxoQEj/1)|
-|`link.match(pattern)[0].replace('user=', '')`|in this line, we find a substring that matches `pattern`, take `0` element from the matches array and remove "user=" part|
+|`authorIdPattern`|a RegEx pattern for search and define author id. [See what it allows you to find](https://regex101.com/r/oxoQEj/1)|
+|`link.match(pattern)[0].replace('user=', '')`|in this line, we find a substring that matches `authorIdPattern`, take `0` element from the matches array and remove "user=" part|
 |`$(el).find('.gs_ai_aff')`|finds element with class name `gs_ai_aff` in all child elements and their children of `el` html element|
 |`.text()`|gets the raw text of html element|
 |[`.trim()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/trim)|removes whitespace from both ends of a string|
@@ -247,11 +249,13 @@ And finally, a function to get the necessary information from each page and put 
 async function startScrape() {
   const allProfiles = [];
   let nextPageLink;
-  for (let i = 0; i < pagesLimit; i++) {
+  let currentPage = 1;
+  while (true) {
     const data = await getScholarProfilesInfo(nextPageLink);
     allProfiles.push(...data.profiles);
     nextPageLink = data.isNextPage;
-    if (nextPageLink === "link not available") break;
+    currentPage++;
+    if (nextPageLink === "link not available" || currentPage > pagesLimit) break;
   }
   return allProfiles;
 }
@@ -261,13 +265,16 @@ async function startScrape() {
 |----|-----------|
 |`allProfiles`|an array with profiles results from page|
 |`nextPageLink`|we write a variable that is not defined for the first run in the loop, and then we write a link to the next page in it|
-|`allProfiles.push(...data.profiles)`|in this code, we use [spread syntax](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax) to split the array `data.profiles` into elements and add them in the end of `allProfiles` array|
-|`if (nextPageLink === "link not available") break`|in this line of code, we check that `nextPageLink` is equal to "link not available". And if the expression in brackets is `true` we run `break` which ends the loop|
+|`currentPage`|the current page number need if we set `pagesLimit`|
+|`allProfiles.push(...data.profiles)`|here, we use [spread syntax](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax) to split the array `data.profiles` into elements and add them in the end of `allProfiles` array|
+|`if (nextPageLink === "link not available" ┃┃ currentPage > pagesLimit) break`|in this line of code, we check that `nextPageLink` is equal to "link not available" or that `currentPage` is less than `pagesLimit` (that's need if we set `pagesLimit`). And if the expression in brackets is `true` we run `break` which ends the loop|
 
 
 Now we can launch our parser. To do this enter `node YOUR_FILE_NAME` in your command line. Where `YOUR_FILE_NAME` is the name of your `.js` file.
 
 <h2 id='output'>Output</h2>
+
+📌Note: if you see something like `[Object]` in your console you can use `console.dir(result, { depth: null })` instead `console.log()`. Watch [Node.js documentation](https://nodejs.org/api/console.html#consoledirobj-options) for more info.
 
 ```json
 [
@@ -318,7 +325,7 @@ const SerpApi = require("google-search-results-nodejs");
 const search = new SerpApi.GoogleSearch(process.env.API_KEY);             //your API key from serpapi.com
 
 const searchString = "astronomy";                         // what we want to search
-const pagesLimit = 2;                                     // limit of pages for getting info
+const pagesLimit = Infinity;                              // limit of pages for getting info
 let currentPage = 1;                                      // current page of the search
 
 const params = {
@@ -371,7 +378,7 @@ const getResults = async () => {
   return profilesResults;
 };
 
-getResults().then(console.log)
+getResults().then((result) => console.dir(result, { depth: null }))
 ```
 
 <h3 id='serp_api_code_explanation'>Code explanation</h3>
@@ -393,7 +400,7 @@ Next, we write down what we want to search and the necessary parameters for maki
 
 ```javascript
 const searchString = "astronomy";
-const pagesLimit = 5;
+const pagesLimit = Infinity;
 let currentPage = 1;
 
 const params = {
@@ -406,7 +413,7 @@ const params = {
 |Code|Explanation|
 |----|-----------|
 |`searchString`|what we want to search|
-|`pagesLimit`|limit of pages for getting info|
+|`pagesLimit`|limit of pages for getting info. If you want to limit the number of pages for getting info you need to define the last page number in this|
 |`currentPage`|current page of the search|
 |`engine`|search engine|
 |`mauthors`|search query|
@@ -473,12 +480,13 @@ const getResults = async () => {
   return profilesResults;
 };
 
-getResults().then(console.log)
+getResults().then((result) => console.dir(result, { depth: null }))
 ```
 
 |Code|Explanation|
 |----|-----------|
 |`profilesResults.push(...(await getScholarProfilesData(json)))`|in this code, we use [spread syntax](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax) to split the array from result that was returned from `getScholarProfilesData` function into elements and add them in the end of `profilesResults` array|
+|`console.dir(result, { depth: null })`|console method `dir` allows you to use an object with necessary parameters to change default output options. Watch [Node.js documentation](https://nodejs.org/api/console.html#consoledirobj-options) for more info|
 
 <h2 id='serp_api_output'>Output</h2>
 

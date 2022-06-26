@@ -3,7 +3,7 @@ const SerpApi = require("google-search-results-nodejs");
 const search = new SerpApi.GoogleSearch(process.env.API_KEY); //your API key from serpapi.com
 
 const searchString = "astronomy";                         // what we want to search
-const pagesLimit = 5;                                     // limit of pages for getting info
+const pagesLimit = Infinity;                              // limit of pages for getting info
 let currentPage = 1;                                      // current page of the search
 
 const params = {

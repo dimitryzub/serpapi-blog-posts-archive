@@ -3,7 +3,7 @@ const axios = require("axios");
 
 const searchString = "astronomy";                        // what we want to search
 const encodedString = encodeURI(searchString);      // what we want to search for in URI encoding
-const pagesLimit = 5;                                   // limit of pages for getting info
+const pagesLimit = Infinity;                               // limit of pages for getting info
 
 const domain = `http://scholar.google.com`;
 
@@ -33,13 +33,13 @@ function fillProfilesData($) {
   const profiles = Array.from($(".gsc_1usr")).map((el) => {
     const link = buildValidLink($(el).find(".gs_ai_name a").attr("href"));
 
-    const pattern = /user=(?<id>[^&]+)/gm                                   //https://regex101.com/r/oxoQEj/1
-    const author_id = link.match(pattern)[0].replace('user=', '')
+    const authorIdPattern = /user=(?<id>[^&]+)/gm                                   //https://regex101.com/r/oxoQEj/1
+    const authorId = link.match(authorIdPattern)[0].replace('user=', '')
 
     return {
       name: $(el).find(".gs_ai_name a").text().trim(),
       link,
-      author_id,
+      authorId,
       photo: $(el).find(".gs_ai_pho img").attr("src"),
       affiliations: $(el).find(".gs_ai_aff").text().trim().replace("\n", ""),
       email: $(el).find(".gs_ai_eml").text().trim() || "email not available",
@@ -74,11 +74,13 @@ function getScholarProfilesInfo(link) {
 async function startScrape() {
   const allProfiles = [];
   let nextPageLink;
-  for (let i = 0; i < pagesLimit; i++) {
+  let currentPage = 1;
+  while (true) {
     const data = await getScholarProfilesInfo(nextPageLink);
     allProfiles.push(...data.profiles);
     nextPageLink = data.isNextPage;
-    if (nextPageLink === "link not available") break;
+    currentPage++;
+    if (nextPageLink === "link not available" || currentPage > pagesLimit) break;
   }
   return allProfiles;
 }
