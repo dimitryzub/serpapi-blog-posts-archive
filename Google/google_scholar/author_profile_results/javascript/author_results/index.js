@@ -1,6 +1,6 @@
-const withCheerio = require("./withCheerio");
+const withPuppeteer = require("./withPuppeteer");
 const withSerpApi = require("./withSerpApi");
 
-withCheerio.getScholarAuthorInfo().then(console.log);
+// withPuppeteer.getScholarAuthorInfo().then((result) => console.dir(result, { depth: null }));
 
-// withSerpApi.getResults().then(console.log);
+withSerpApi.getResults().then((result) => console.dir(result, { depth: null }));

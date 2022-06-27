@@ -1,12 +1,18 @@
 <h2 id='what'>What will be scraped</h2>
 
-![image](https://user-images.githubusercontent.com/64033139/174759913-a52497b3-4e7b-450f-ba57-cde8b26abe77.png)
+![image](https://user-images.githubusercontent.com/64033139/175902155-7a216749-4d5a-4bbd-9ac3-933fb1871ba9.png)
 
 <h2 id='preparation'>Preparation</h2>
 
-First, we need to create a Node.js* project and add [`npm`](https://www.npmjs.com/) packages [`cheerio`](https://www.npmjs.com/package/cheerio) to parse parts of the HTML markup, and [`axios`](https://www.npmjs.com/package/axios) to make a request to a website. To do this, in the directory with our project, open the command line and enter `npm init -y`, and then `npm i cheerio axios`.
+First, we need to create a Node.js* project and add [`npm`](https://www.npmjs.com/) packages [`puppeteer`](https://www.npmjs.com/package/puppeteer), [`puppeteer-extra`](https://www.npmjs.com/package/puppeteer-extra) and [`puppeteer-extra-plugin-stealth`](https://www.npmjs.com/package/puppeteer-extra-plugin-stealth) to control Chromium (or Chrome, or Firefox, but now we work only with Chromium which is used by default) over the [DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/) in [headless](https://developers.google.com/web/updates/2017/04/headless-chrome) or non-headless mode. 
+
+To do this, in the directory with our project, open the command line and enter `npm init -y`, and then `npm i puppeteer puppeteer-extra puppeteer-extra-plugin-stealth`.
 
 *<span style="font-size: 15px;">If you don't have Node.js installed, you can [download it from nodejs.org](https://nodejs.org/en/) and follow the installation [documentation](https://nodejs.dev/learn/introduction-to-nodejs).</span>
+
+📌Note: also, you can use `puppeteer` without any extensions, but I strongly recommended use it with `puppeteer-extra` with `puppeteer-extra-plugin-stealth` to prevent website detection that you are using headless Chromium or that you are using [web driver](https://www.w3.org/TR/webdriver/). You can check it on [Chrome headless tests website](https://intoli.com/blog/not-possible-to-block-chrome-headless/chrome-headless-test.html). The screenshot below shows you a difference.
+
+![stealth](https://user-images.githubusercontent.com/64033139/173014238-eb8450d7-616c-42ae-8b2f-24eeb5fd5916.png)
 
 <h2 id='process'>Process</h2>
 
@@ -20,106 +26,137 @@ The Gif below illustrates the approach of selecting different parts of the resul
 <h2 id='full_code'>Full code</h2>
 
 ```javascript
-const cheerio = require("cheerio");
-const axios = require("axios");
+const puppeteer = require("puppeteer-extra");
+const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 
-const user = "6ZiRSwQAAAAJ";                                       // the ID of the author we want to scrape
+puppeteer.use(StealthPlugin());
+
+const requestParams = {
+  user: "6ZiRSwQAAAAJ",                              // the ID of the author we want to scrape
+  hl: "en",                                          // parameter defines the language to use for the Google search
+};
 
 const domain = `http://scholar.google.com`;
 
-const AXIOS_OPTIONS = {
-  headers: {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36",
-  },                                                              // adding the User-Agent header as one way to prevent the request from being blocked
-  params: {
-    user,
-    hl: "en",                                                     // parameter defines the language to use for the Google search
-  },
-};
-
-function buildValidLink(rawLink) {
-  if (!rawLink || rawLink.includes("javascript:void(0)")) return "link not available";
-  if (rawLink.includes("scholar.googleusercontent")) return rawLink;
-  return domain + rawLink;
-}
-
-function getScholarAuthorInfo() {
-  return axios.get(`${domain}/citations`, AXIOS_OPTIONS).then(function ({ data }) {
-    let $ = cheerio.load(data);
-
-    return {
-      name: $("#gsc_prf_in").text().trim(),
-      photo: buildValidLink($("#gsc_prf_pup-img").attr("src")),
-      affiliations: $(".gsc_prf_il:nth-child(2)").text().trim(),
-      website: $(".gsc_prf_ila").attr("href") || "website not available",
-      interests: Array.from($("#gsc_prf_int a")).map((interest) => {
-        return {
-          title: $(interest).text().trim(),
-          link: buildValidLink($(interest).attr("href")),
-        };
-      }),
-      articles: Array.from($(".gsc_a_tr")).map((el) => {
-        return {
-          title: $(el).find(".gsc_a_at").text().trim(),
-          link: buildValidLink($(el).find(".gsc_a_at").attr("href")),
-          authors: $(el).find(".gs_gray:first-of-type").text().trim(),
-          publication: $(el).find(".gs_gray:last-of-type").text().trim(),
-          citedBy: {
-            link: $(el).find(".gsc_a_ac").attr("href"),
-            cited: $(el).find(".gsc_a_ac").text().trim(),
-          },
-          year: $(el).find(".gsc_a_h").text().trim(),
-        };
-      }),
-      table: {
-        citations: {
-          all: $("#gsc_rsb_st tr:nth-child(1) td:nth-child(2)").text().trim(),
-          since2017: $("#gsc_rsb_st tr:nth-child(1) td:nth-child(3)").text().trim(),
+async function getArticles(page) {
+  while (true) {
+    await page.waitForSelector("#gsc_bpf_more");
+    const isNextPage = await page.$("#gsc_bpf_more:not([disabled])");
+    if (!isNextPage) break;
+    await page.click("#gsc_bpf_more");
+    await page.waitForTimeout(5000);
+  }
+  return await page.evaluate(async () => {
+    const articles = document.querySelectorAll(".gsc_a_tr");
+    const articleInfo = [];
+    for (const el of articles) {
+      articleInfo.push({
+        title: el.querySelector(".gsc_a_at").textContent.trim(),
+        link: await window.buildValidLink(el.querySelector(".gsc_a_at").getAttribute("href")),
+        authors: el.querySelector(".gs_gray:first-of-type").textContent.trim(),
+        publication: el.querySelector(".gs_gray:last-of-type").textContent.trim(),
+        citedBy: {
+          link: el.querySelector(".gsc_a_ac").getAttribute("href"),
+          cited: el.querySelector(".gsc_a_ac").textContent.trim(),
         },
-        hIndex: {
-          all: $("#gsc_rsb_st tr:nth-child(2) td:nth-child(2)").text().trim(),
-          since2017: $("#gsc_rsb_st tr:nth-child(2) td:nth-child(3)").text().trim(),
-        },
-        i10Index: {
-          all: $("#gsc_rsb_st tr:nth-child(3) td:nth-child(2)").text().trim(),
-          since2017: $("#gsc_rsb_st tr:nth-child(3) td:nth-child(3)").text().trim(),
-        },
-      },
-      graph: Array.from($(".gsc_md_hist_b .gsc_g_t")).map((el, i) => {
-        return {
-          year: $(el).text().trim(),
-          citations: $(Array.from($(".gsc_md_hist_b .gsc_g_al"))[i])
-            .text()
-            .trim(),
-        };
-      }),
-      publicAccess: {
-        link: buildValidLink($("#gsc_lwp_mndt_lnk").attr("href")),
-        available: $(Array.from($(".gsc_rsb_m_a"))[0])
-          .text()
-          .trim(),
-        notAvailable: $(Array.from($(".gsc_rsb_m_na"))[0])
-          .text()
-          .trim(),
-      },
-      coAuthors: Array.from($("#gsc_rsb_co .gsc_rsb_aa")).map((el) => {
-        const link = buildValidLink($(el).find(".gsc_rsb_a_desc a").attr("href"));
-        const pattern = /user=(?<id>[^&]+)/gm;                                  //https://regex101.com/r/oxoQEj/1
-        const author_id = link.match(pattern)[0].replace("user=", "");
-        return {
-          name: $(el).find(".gsc_rsb_a_desc a").text().trim(),
-          link,
-          author_id,
-          photo: buildValidLink($(el).find(".gs_pp_df").attr("data-src")),
-          affiliations: $(el).find(".gsc_rsb_a_ext").text().trim(),
-          email: $(el).find(".gsc_rsb_a_ext2")?.text().trim() || "email not available",
-        };
-      }),
-    };
+        year: el.querySelector(".gsc_a_h").textContent.trim(),
+      });
+    }
+    return articleInfo;
   });
 }
 
-getScholarAuthorInfo().then(console.log);
+async function getScholarAuthorInfo() {
+  const browser = await puppeteer.launch({
+    headless: false,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
+
+  const page = await browser.newPage();
+
+  const URL = `${domain}/citations?hl=${requestParams.hl}&user=${requestParams.user}`;
+
+  await page.setDefaultNavigationTimeout(60000);
+  await page.goto(URL);
+  await page.waitForSelector(".gsc_a_tr");
+  await page.waitForTimeout(1000);
+
+  await page.exposeFunction("buildValidLink", (rawLink) => {
+    if (!rawLink || rawLink.includes("javascript:void(0)")) return "link not available";
+    if (rawLink.includes("scholar.googleusercontent")) return rawLink;
+    return domain + rawLink;
+  });
+
+  const articles = await getArticles(page);
+
+  const scholarAuthorInfo = await page.evaluate(async (articles) => {
+    const interests = [];
+    const interstsSelectors = document.querySelectorAll("#gsc_prf_int a");
+    for (const interest of interstsSelectors) {
+      interests.push({
+        title: interest.textContent.trim(),
+        link: await window.buildValidLink(interest.getAttribute("href")),
+      });
+    }
+
+    const coAuthors = [];
+    const coAuthorsSelectors = document.querySelectorAll("#gsc_rsb_co .gsc_rsb_aa");
+    for (const coAuthor of coAuthorsSelectors) {
+      const link = await window.buildValidLink(coAuthor.querySelector(".gsc_rsb_a_desc a").getAttribute("href"));
+      const authorIdPattern = /user=(?<id>[^&]+)/gm;                            //https://regex101.com/r/oxoQEj/1
+      const authorId = link.match(authorIdPattern)[0].replace("user=", "");
+      coAuthors.push({
+        name: coAuthor.querySelector(".gsc_rsb_a_desc a").textContent.trim(),
+        link,
+        authorId,
+        photo: await window.buildValidLink(coAuthor.querySelector(".gs_pp_df").getAttribute("data-src")),
+        affiliations: coAuthor.querySelector(".gsc_rsb_a_ext").textContent.trim(),
+        email: coAuthor.querySelector(".gsc_rsb_a_ext2")?.textContent.trim() || "email not available",
+      });
+    }
+
+    return {
+      name: document.querySelector("#gsc_prf_in").textContent.trim(),
+      photo: await window.buildValidLink(document.querySelector("#gsc_prf_pup-img").getAttribute("src")),
+      affiliations: document.querySelector(".gsc_prf_il:nth-child(2)").textContent.trim(),
+      website: document.querySelector(".gsc_prf_ila").getAttribute("href") || "website not available",
+      interests,
+      articles,
+      table: {
+        citations: {
+          all: document.querySelector("#gsc_rsb_st tr:nth-child(1) td:nth-child(2)").textContent.trim(),
+          since2017: document.querySelector("#gsc_rsb_st tr:nth-child(1) td:nth-child(3)").textContent.trim(),
+        },
+        hIndex: {
+          all: document.querySelector("#gsc_rsb_st tr:nth-child(2) td:nth-child(2)").textContent.trim(),
+          since2017: document.querySelector("#gsc_rsb_st tr:nth-child(2) td:nth-child(3)").textContent.trim(),
+        },
+        i10Index: {
+          all: document.querySelector("#gsc_rsb_st tr:nth-child(3) td:nth-child(2)").textContent.trim(),
+          since2017: document.querySelector("#gsc_rsb_st tr:nth-child(3) td:nth-child(3)").textContent.trim(),
+        },
+      },
+      graph: Array.from(document.querySelectorAll(".gsc_md_hist_b .gsc_g_t")).map((el, i) => {
+        return {
+          year: el.textContent.trim(),
+          citations: document.querySelectorAll(".gsc_md_hist_b .gsc_g_al")[i].textContent.trim(),
+        };
+      }),
+      publicAccess: {
+        link: await window.buildValidLink(document.querySelector("#gsc_lwp_mndt_lnk").getAttribute("href")),
+        available: document.querySelectorAll(".gsc_rsb_m_a")[0].textContent.trim(),
+        notAvailable: document.querySelectorAll(".gsc_rsb_m_na")[0].textContent.trim(),
+      },
+      coAuthors,
+    };
+  }, articles);
+
+  await browser.close();
+
+  return scholarAuthorInfo;
+}
+
+getScholarAuthorInfo().then((result) => console.dir(result, { depth: null }));
 ```
 
 <h3 id='code_explanation'>Code explanation</h3>
@@ -127,141 +164,189 @@ getScholarAuthorInfo().then(console.log);
 Declare constants from required libraries:
 
 ```javascript
-const cheerio = require("cheerio");
-const axios = require("axios");
+const puppeteer = require("puppeteer-extra");
+const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 ```
         
 |Code|Explanation|
 |----|-----------|
-|[`cheerio`](https://www.npmjs.com/package/cheerio)|library for parsing the html page and access the necessary selectors|
-|[`axios`](https://www.npmjs.com/package/axios)|library for requesting the desired html document|
+|[`puppeteer`](https://www.npmjs.com/package/puppeteer-extra)|Chromium control library|
+|[`StealthPlugin`](https://www.npmjs.com/package/puppeteer-extra-plugin-stealth)|library for prevent website detection that you are using [web driver](https://www.w3.org/TR/webdriver/)|
 
-Next, we write in constants user ID and the necessary parameters for making a request:
+Next, we "saying" to `puppeteer` use `StealthPlugin`:
 
 ```javascript
-const user = "6ZiRSwQAAAAJ";
+puppeteer.use(StealthPlugin());
+```
+
+Next, we write user ID and the necessary parameters for making a request:
+
+```javascript
+const requestParams = {
+  user: "6ZiRSwQAAAAJ",                              // the ID of the author we want to scrape
+  hl: "en",                                          // parameter defines the language to use for the Google search
+};
 
 const domain = `http://scholar.google.com`;
-
-const AXIOS_OPTIONS = {
-  headers: {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36",
-  },
-  params: {
-    user,
-    hl: "en",
-  },
-};
 ```
 
 |Code|Explanation|
 |----|-----------|
 |`user`|user ID from Google Scholar|
-|`headers`|[HTTP headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers) let the client and the server pass additional information with an HTTP request or response|
-|[`User-Agent`](https://developer.mozilla.org/en-US/docs/Glossary/User_agent)|is used to act as a "real" user visit. Default axios requests user-agent is `axios/0.27.2` so websites understand that it's a script that sends a request and might block it. [Check what's your user-agent](https://www.whatismybrowser.com/detect/what-is-my-user-agent/).|
 |`hl`|parameter defines the language to use for the Google search|
-
-Next, we write a function that helps us change the raw links to the correct links:
-
-```javascript
-function buildValidLink(rawLink) {
-  if (!rawLink || rawLink.includes("javascript:void(0)")) return "link not available";
-  if (rawLink.includes("scholar.googleusercontent")) return rawLink;
-  return domain + rawLink;
-}
-```
-
-We need to do this with links because they are of different types. For example, some links start with "/citations", some already have a complete and correct link, and some no links.
         
-And finally a function to get the necessary information:
+Next, we write down a function for getting articles from the page:
 
 ```javascript
-function getScholarAuthorInfo() {
-  return axios.get(`${domain}/citations`, AXIOS_OPTIONS).then(function ({ data }) {
-    let $ = cheerio.load(data);
-
-    return {
-      name: $("#gsc_prf_in").text().trim(),
-      photo: buildValidLink($("#gsc_prf_pup-img").attr("src")),
-      affiliations: $(".gsc_prf_il:nth-child(2)").text().trim(),
-      website: $(".gsc_prf_ila").attr("href") || "website not available",
-      interests: Array.from($("#gsc_prf_int a")).map((interest) => {
-        return {
-          title: $(interest).text().trim(),
-          link: buildValidLink($(interest).attr("href")),
-        };
-      }),
-      articles: Array.from($(".gsc_a_tr")).map((el) => {
-        return {
-          title: $(el).find(".gsc_a_at").text().trim(),
-          link: buildValidLink($(el).find(".gsc_a_at").attr("href")),
-          authors: $(el).find(".gs_gray:first-of-type").text().trim(),
-          publication: $(el).find(".gs_gray:last-of-type").text().trim(),
-          citedBy: {
-            link: $(el).find(".gsc_a_ac").attr("href"),
-            cited: $(el).find(".gsc_a_ac").text().trim(),
-          },
-          year: $(el).find(".gsc_a_h").text().trim(),
-        };
-      }),
-      table: {
-        citations: {
-          all: $("#gsc_rsb_st tr:nth-child(1) td:nth-child(2)").text().trim(),
-          since2017: $("#gsc_rsb_st tr:nth-child(1) td:nth-child(3)").text().trim(),
+async function getArticles(page) {
+  while (true) {
+    await page.waitForSelector("#gsc_bpf_more");
+    const isNextPage = await page.$("#gsc_bpf_more:not([disabled])");
+    if (!isNextPage) break;
+    await page.click("#gsc_bpf_more");
+    await page.waitForTimeout(5000);
+  }
+  return await page.evaluate(async () => {
+    const articles = document.querySelectorAll(".gsc_a_tr");
+    const articleInfo = [];
+    for (const el of articles) {
+      articleInfo.push({
+        title: el.querySelector(".gsc_a_at").textContent.trim(),
+        link: await window.buildValidLink(el.querySelector(".gsc_a_at").getAttribute("href")),
+        authors: el.querySelector(".gs_gray:first-of-type").textContent.trim(),
+        publication: el.querySelector(".gs_gray:last-of-type").textContent.trim(),
+        citedBy: {
+          link: el.querySelector(".gsc_a_ac").getAttribute("href"),
+          cited: el.querySelector(".gsc_a_ac").textContent.trim(),
         },
-        hIndex: {
-          all: $("#gsc_rsb_st tr:nth-child(2) td:nth-child(2)").text().trim(),
-          since2017: $("#gsc_rsb_st tr:nth-child(2) td:nth-child(3)").text().trim(),
-        },
-        i10Index: {
-          all: $("#gsc_rsb_st tr:nth-child(3) td:nth-child(2)").text().trim(),
-          since2017: $("#gsc_rsb_st tr:nth-child(3) td:nth-child(3)").text().trim(),
-        },
-      },
-      graph: Array.from($(".gsc_md_hist_b .gsc_g_t")).map((el, i) => {
-        return {
-          year: $(el).text().trim(),
-          citations: $(Array.from($(".gsc_md_hist_b .gsc_g_al"))[i])
-            .text()
-            .trim(),
-        };
-      }),
-      publicAccess: {
-        link: buildValidLink($("#gsc_lwp_mndt_lnk").attr("href")),
-        available: $(Array.from($(".gsc_rsb_m_a"))[0])
-          .text()
-          .trim(),
-        notAvailable: $(Array.from($(".gsc_rsb_m_na"))[0])
-          .text()
-          .trim(),
-      },
-      coAuthors: Array.from($("#gsc_rsb_co .gsc_rsb_aa")).map((el) => {
-        const link = buildValidLink($(el).find(".gsc_rsb_a_desc a").attr("href"));
-        const pattern = /user=(?<id>[^&]+)/gm;
-        const author_id = link.match(pattern)[0].replace("user=", "");
-        return {
-          name: $(el).find(".gsc_rsb_a_desc a").text().trim(),
-          link,
-          author_id,
-          photo: buildValidLink($(el).find(".gs_pp_df").attr("data-src")),
-          affiliations: $(el).find(".gsc_rsb_a_ext").text().trim(),
-          email: $(el).find(".gsc_rsb_a_ext2")?.text().trim() || "email not available",
-        };
-      }),
-    };
+        year: el.querySelector(".gsc_a_h").textContent.trim(),
+      });
+    }
+    return articleInfo;
   });
 }
 ```
 
 |Code|Explanation|
 |----|-----------|
-|`function ({ data })`|we received the response from axios request that have `data` key that we [destructured](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment) (this entry is equal to `function (response)` and in the next line `cheerio.load(response.data)`)|
-|`.attr('href')`|gets the `href` attribute value of the html element|
-|`$(el).find('.gsc_a_at')`|finds element with class name `gsc_a_at` in all child elements and their children of `el` html element|
-|`.text()`|gets the raw text of html element|
+|`page.waitForSelector("#gsc_bpf_more")`|stops the script and waits for the html element with the `#gsc_bpf_more` selector to load|
+|`page.click("#gsc_bpf_more")`|this methods emulates mouse click on the html element with the `#gsc_bpf_more` selector|
+|`page.waitForTimeout(5000)`|waiting 5000 ms before continue|
+|`articleInfo`|an array with information about all articles from the page|
+|`page.evaluate(async () => {`|is the Puppeteer method for injecting `function` in the page context and allows to return data directly from the browser|
+|[`document.querySelectorAll(".gsc_a_tr")`](https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll)|returns a static [NodeList](https://developer.mozilla.org/en-US/docs/Web/API/NodeList) representing a list of the document's elements that match the css selectors with class name `gsc_a_tr`|
+|[`el.querySelector(".gsc_a_at")`](https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector)|returns the first html element with class name `gsc_a_at` which is any child of the `el` html element|
 |[`.trim()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/trim)|removes whitespace from both ends of a string|
-|`pattern`|a RegEx pattern for search and define author id. [See what it allows you to find](https://regex101.com/r/oxoQEj/1)|
-|`link.match(pattern)[0].replace('user=', '')`|in this line, we find a substring that matches `pattern`, take `0` element from the matches array and remove "user=" part|
+|`window.buildValidLink`|is the function injected in the browser's window context in `getScholarAuthorInfo` function. More info in `getScholarAuthorInfo` explanation section|
+|`.getAttribute("href")`|gets the `href` attribute value of the html element|
+        
+And finally, a function to control the browser, and get main information about the author:
+
+```javascript
+async function getScholarAuthorInfo() {
+  const browser = await puppeteer.launch({
+    headless: false,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
+
+  const page = await browser.newPage();
+
+  const URL = `${domain}/citations?hl=${requestParams.hl}&user=${requestParams.user}`;
+
+  await page.setDefaultNavigationTimeout(60000);
+  await page.goto(URL);
+  await page.waitForSelector(".gsc_a_tr");
+  await page.waitForTimeout(1000);
+
+  await page.exposeFunction("buildValidLink", (rawLink) => {
+    if (!rawLink || rawLink.includes("javascript:void(0)")) return "link not available";
+    if (rawLink.includes("scholar.googleusercontent")) return rawLink;
+    return domain + rawLink;
+  });
+
+  const articles = await getArticles(page);
+
+  const scholarAuthorInfo = await page.evaluate(async (articles) => {
+    const interests = [];
+    const interstsSelectors = document.querySelectorAll("#gsc_prf_int a");
+    for (const interest of interstsSelectors) {
+      interests.push({
+        title: interest.textContent.trim(),
+        link: await window.buildValidLink(interest.getAttribute("href")),
+      });
+    }
+
+    const coAuthors = [];
+    const coAuthorsSelectors = document.querySelectorAll("#gsc_rsb_co .gsc_rsb_aa");
+    for (const coAuthor of coAuthorsSelectors) {
+      const link = await window.buildValidLink(coAuthor.querySelector(".gsc_rsb_a_desc a").getAttribute("href"));
+      const authorIdPattern = /user=(?<id>[^&]+)/gm;                            //https://regex101.com/r/oxoQEj/1
+      const authorId = link.match(authorIdPattern)[0].replace("user=", "");
+      coAuthors.push({
+        name: coAuthor.querySelector(".gsc_rsb_a_desc a").textContent.trim(),
+        link,
+        authorId,
+        photo: await window.buildValidLink(coAuthor.querySelector(".gs_pp_df").getAttribute("data-src")),
+        affiliations: coAuthor.querySelector(".gsc_rsb_a_ext").textContent.trim(),
+        email: coAuthor.querySelector(".gsc_rsb_a_ext2")?.textContent.trim() || "email not available",
+      });
+    }
+
+    return {
+      name: document.querySelector("#gsc_prf_in").textContent.trim(),
+      photo: await window.buildValidLink(document.querySelector("#gsc_prf_pup-img").getAttribute("src")),
+      affiliations: document.querySelector(".gsc_prf_il:nth-child(2)").textContent.trim(),
+      website: document.querySelector(".gsc_prf_ila").getAttribute("href") || "website not available",
+      interests,
+      articles,
+      table: {
+        citations: {
+          all: document.querySelector("#gsc_rsb_st tr:nth-child(1) td:nth-child(2)").textContent.trim(),
+          since2017: document.querySelector("#gsc_rsb_st tr:nth-child(1) td:nth-child(3)").textContent.trim(),
+        },
+        hIndex: {
+          all: document.querySelector("#gsc_rsb_st tr:nth-child(2) td:nth-child(2)").textContent.trim(),
+          since2017: document.querySelector("#gsc_rsb_st tr:nth-child(2) td:nth-child(3)").textContent.trim(),
+        },
+        i10Index: {
+          all: document.querySelector("#gsc_rsb_st tr:nth-child(3) td:nth-child(2)").textContent.trim(),
+          since2017: document.querySelector("#gsc_rsb_st tr:nth-child(3) td:nth-child(3)").textContent.trim(),
+        },
+      },
+      graph: Array.from(document.querySelectorAll(".gsc_md_hist_b .gsc_g_t")).map((el, i) => {
+        return {
+          year: el.textContent.trim(),
+          citations: document.querySelectorAll(".gsc_md_hist_b .gsc_g_al")[i].textContent.trim(),
+        };
+      }),
+      publicAccess: {
+        link: await window.buildValidLink(document.querySelector("#gsc_lwp_mndt_lnk").getAttribute("href")),
+        available: document.querySelectorAll(".gsc_rsb_m_a")[0].textContent.trim(),
+        notAvailable: document.querySelectorAll(".gsc_rsb_m_na")[0].textContent.trim(),
+      },
+      coAuthors,
+    };
+  }, articles);
+
+  await browser.close();
+
+  return scholarAuthorInfo;
+}
+```
+
+|Code|Explanation|
+|----|-----------|
+|`puppeteer.launch({options})`|this method launches a new instance of the Chromium browser with current `options`|
+|`headless`|defines which mode to use: [headless](https://developers.google.com/web/updates/2017/04/headless-chrome) (by default) or non-headless|
+|`args`|an array with [arguments](https://peter.sh/experiments/chromium-command-line-switches/) which is used with Chromium|
+|`["--no-sandbox", "--disable-setuid-sandbox"]`|these arguments we use to allow the launch of the browser process in the [online IDE](https://replit.com/@MikhailZub/Scrape-eBay-Organic-Results-with-NodeJS-SerpApi#main.sh)|
+|`browser.newPage()`|this method launches a new page|
+|`page.setDefaultNavigationTimeout(60000)`|changing default (30 sec) time for waiting for selectors to 60000 ms (1 min) for slow internet connection|
+|`page.goto(URL)`|navigation to `URL` which is defined above|
+|`page.exposeFunction("buildValidLink", injectedFunction)`|inject `injectedFunction` with "buildValidLink" name in the browser's window context. This function  helps us change the raw links to the correct links. We need to do this with links because they are of different types. For example, some links start with "/citations", some already have a complete and correct link, and some no links|
+|`authorIdPattern`|a RegEx pattern for search and define author id. [See what it allows you to find](https://regex101.com/r/oxoQEj/1)|
+|`link.match(authorIdPattern)[0].replace('user=', '')`|here we find a substring that matches `authorIdPattern`, take `0` element from the matches array and remove "user=" part|
+|`browser.close()`|after all we close the browser instance|
 
 Now we can launch our parser. To do this enter `node YOUR_FILE_NAME` in your command line. Where `YOUR_FILE_NAME` is the name of your `.js` file.
 
@@ -365,14 +450,13 @@ Now we can launch our parser. To do this enter `node YOUR_FILE_NAME` in your com
 
 Alternatively, you can use the [Google Scholar Author API](https://serpapi.com/google-scholar-author-api) from SerpApi. SerpApi is a free API with 100 search per month. If you need more searches, there are paid plans.
 
-The difference is that you won't have to write code from scratch and maintain it. You may also experience blocking from Google and changing the selected selectors. Using a ready-made solution from SerpAPI, you just need to iterate the received JSON. [Check out the playground](https://serpapi.com/playground).
+The difference is that you won't have to write code from scratch and maintain it. You may also experience blocking from Google and changing selectors which will break the parser. Instead, you just need to iterate the structured JSON and get the data you want. [Check out the playground](https://serpapi.com/playground).
 
 First we need to install [`google-search-results-nodejs`](https://www.npmjs.com/package/google-search-results-nodejs). To do this you need to enter in your console: `npm i google-search-results-nodejs`
 
 ```javascript
-require("dotenv").config();
 const SerpApi = require("google-search-results-nodejs");
-const search = new SerpApi.GoogleSearch(process.env.API_KEY);             //your API key from serpapi.com
+const search = new SerpApi.GoogleSearch(process.env.API_KEY);                     //your API key from serpapi.com
 
 const user = "6ZiRSwQAAAAJ";                                                      // the ID of the author we want to scrape
 
@@ -380,6 +464,24 @@ const params = {
   engine: "google_scholar_author",                                                // search engine
   author_id: user,                                                                // author ID
   hl: "en",                                                                       // Parameter defines the language to use for the Google search
+  num: "100",                                                                     // Parameter defines the number of search results per page
+};
+
+const getArticlesFromPage = ({ articles }) => {
+  return articles?.map((article) => {
+    const { title, link = "link not available", authors, publication, cited_by, year } = article;
+    return {
+      title,
+      link,
+      authors,
+      publication,
+      citedBy: {
+        link: cited_by.link,
+        cited: cited_by.value,
+      },
+      year,
+    };
+  });
 };
 
 const getScholarAuthorData = function ({ author, articles, cited_by, public_access: publicAccess, co_authors }) {
@@ -398,20 +500,7 @@ const getScholarAuthorData = function ({ author, articles, cited_by, public_acce
           link,
         };
       }) || "no interests",
-    articles: articles?.map((article) => {
-      const { title, link = "link not available", authors, publication, cited_by, year } = article;
-      return {
-        title,
-        link,
-        authors,
-        publication,
-        citedBy: {
-          link: cited_by.link,
-          cited: cited_by.value,
-        },
-        year,
-      };
-    }),
+    articles: getArticlesFromPage({articles}),
     table: {
       citations: {
         all: table[0].citations.all,
@@ -448,7 +537,21 @@ const getJson = () => {
   });
 };
 
-getJson().then(getScholarAuthorData).then(console.log);
+const getResults = async () => {
+  const json = await getJson(params);
+  const scholarAuthorData = getScholarAuthorData(json);
+  let nextPage = json.serpapi_pagination?.next;
+  if (nextPage) params.start = 0;
+  while (nextPage) {
+    params.start += 100;
+    const json = await getJson(params);
+    nextPage = json.serpapi_pagination?.next;
+    scholarAuthorData.articles.push(...getArticlesFromPage(json));
+  }
+  return scholarAuthorData;
+};
+
+getResults.then((result) => console.dir(result, { depth: null }));
 ```
 
 <h3 id='serp_api_code_explanation'>Code explanation</h3>
@@ -475,6 +578,7 @@ const params = {
   engine: "google_scholar_author",
   author_id: user,
   hl: "en",
+  num: "100",
 };
 ```
 
@@ -483,6 +587,34 @@ const params = {
 |`user`|user ID from Google Scholar|
 |`engine`|search engine|
 |`hl`|parameter defines the language to use for the Google search|
+|`num`|parameter defines the number of search results per page|
+
+Next, we write down a function for getting articles from the page:
+
+```javascript
+const getArticlesFromPage = ({ articles }) => {
+  return articles?.map((article) => {
+    const { title, link = "link not available", authors, publication, cited_by, year } = article;
+    return {
+      title,
+      link,
+      authors,
+      publication,
+      citedBy: {
+        link: cited_by.link,
+        cited: cited_by.value,
+      },
+      year,
+    };
+  });
+};
+```
+
+|Code|Explanation|
+|----|-----------|
+|`articles`|data that we destructured from response|
+|`title, link, ..., year`|data that we destructured from `article` object|
+|`link = "link not available"`|we set default value `link not available` if `link` is `undefined`|
 
 Next, we write a callback function in which we describe what data we need from the result of our request:
 
@@ -503,20 +635,7 @@ const getScholarAuthorData = function ({ author, articles, cited_by, public_acce
           link,
         };
       }) || "no interests",
-    articles: articles?.map((article) => {
-      const { title, link = "link not available", authors, publication, cited_by, year } = article;
-      return {
-        title,
-        link,
-        authors,
-        publication,
-        citedBy: {
-          link: cited_by.link,
-          cited: cited_by.value,
-        },
-        year,
-      };
-    }),
+    articles: getArticlesFromPage({articles}),
     table: {
       citations: {
         all: table[0].citations.all,
@@ -555,7 +674,7 @@ const getScholarAuthorData = function ({ author, articles, cited_by, public_acce
 |`thumbnail: photo`|we redefine destructured data `thumbnail` to new `photo`|
 |`website = "website not available"`|we set default value `website not available` if `website` is `undefined`|
 
-Next, we wrap the search method from the SerpApi library in a promise to further work with the search results and run it:
+Next, we wrap the search method from the SerpApi library in a promise to further work with the search results:
 
 ```javascript
 const getJson = () => {
@@ -563,9 +682,32 @@ const getJson = () => {
     search.json(params, resolve);
   })
 }
-
-getJson().then(getScholarAuthorData).then(console.log);
 ```
+
+And finally, we declare and run the function `getResult` that gets main author's info and articles info from all pages and return it:
+
+```javascript
+const getResults = async () => {
+  const json = await getJson(params);
+  const scholarAuthorData = getScholarAuthorData(json);
+  let nextPage = json.serpapi_pagination?.next;
+  if (nextPage) params.start = 0;
+  while (nextPage) {
+    params.start += 100;
+    const json = await getJson(params);
+    nextPage = json.serpapi_pagination?.next;
+    scholarAuthorData.articles.push(...getArticlesFromPage(json));
+  }
+  return scholarAuthorData;
+};
+
+getResults().then((result) => console.dir(result, { depth: null }))
+```
+
+|Code|Explanation|
+|----|-----------|
+|`scholarAuthorData.articles.push(...getArticlesFromPage(json))`|in this code, we use [spread syntax](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax) to split the array from result that was returned from `getArticlesFromPage` function into elements and add them in the end of `scholarAuthorData.articles` array|
+|`console.dir(result, { depth: null })`|console method `dir` allows you to use an object with necessary parameters to change default output options. Watch [Node.js documentation](https://nodejs.org/api/console.html#consoledirobj-options) for more info|
 
 <h2 id='serp_api_output'>Output</h2>
 

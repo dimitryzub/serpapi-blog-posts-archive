@@ -7,6 +7,24 @@ const params = {
   engine: "google_scholar_author",                                                // search engine
   author_id: user,                                                                // author ID
   hl: "en",                                                                       // Parameter defines the language to use for the Google search
+  num: "100",                                                                     // Parameter defines the number of search results per page
+};
+
+const getArticlesFromPage = ({ articles }) => {
+  return articles?.map((article) => {
+    const { title, link = "link not available", authors, publication, cited_by, year } = article;
+    return {
+      title,
+      link,
+      authors,
+      publication,
+      citedBy: {
+        link: cited_by.link,
+        cited: cited_by.value,
+      },
+      year,
+    };
+  });
 };
 
 const getScholarAuthorData = function ({ author, articles, cited_by, public_access: publicAccess, co_authors }) {
@@ -25,20 +43,7 @@ const getScholarAuthorData = function ({ author, articles, cited_by, public_acce
           link,
         };
       }) || "no interests",
-    articles: articles?.map((article) => {
-      const { title, link = "link not available", authors, publication, cited_by, year } = article;
-      return {
-        title,
-        link,
-        authors,
-        publication,
-        citedBy: {
-          link: cited_by.link,
-          cited: cited_by.value,
-        },
-        year,
-      };
-    }),
+    articles: getArticlesFromPage({articles}),
     table: {
       citations: {
         all: table[0].citations.all,
@@ -75,6 +80,16 @@ const getJson = () => {
   });
 };
 
-exports.getResults = () => {
-  return getJson().then(getScholarAuthorData);
+exports.getResults = async () => {
+  const json = await getJson(params);
+  const scholarAuthorData = getScholarAuthorData(json);
+  let nextPage = json.serpapi_pagination?.next;
+  if (nextPage) params.start = 0;
+  while (nextPage) {
+    params.start += 100;
+    const json = await getJson(params);
+    nextPage = json.serpapi_pagination?.next;
+    scholarAuthorData.articles.push(...getArticlesFromPage(json));
+  }
+  return scholarAuthorData;
 };
