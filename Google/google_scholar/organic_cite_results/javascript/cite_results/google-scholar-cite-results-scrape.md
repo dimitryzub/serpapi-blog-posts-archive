@@ -96,9 +96,13 @@ async function getScholarCitesInfo() {
 
   for (id of citesId) {
     const URL = `${domain}/scholar?q=info:${id}:scholar.google.com/&output=cite&hl=${requestParams.hl}`;
-    await page.goto(URL);
-    await page.waitForTimeout(2000);
-    allCites.push(await fillCiteData(page));
+    try {
+      await page.goto(URL);
+      await page.waitForTimeout(2000);
+      allCites.push(await fillCiteData(page));
+    } catch {
+      console.log("Something was wrong with getting info from ID: ", id)
+    }
   }
 
   await browser.close();
@@ -145,7 +149,7 @@ let currentPage = 1;
 |Code|Explanation|
 |----|-----------|
 |`q`|search query|
-|`hl`|parameter defines the language to use for the Google search|
+|`hl`|parameter defines the language to use for the Google Scholar search|
 |`pagesLimit`|limit of pages for getting info. If you want to limit the number of pages for getting info you need to define the last page number in this|
         
 Next, we write down a function for getting citations ID from all pages:
@@ -235,9 +239,13 @@ async function getScholarCitesInfo() {
 
   for (id of citesId) {
     const URL = `${domain}/scholar?q=info:${id}:scholar.google.com/&output=cite&hl=${requestParams.hl}`;
-    await page.goto(URL);
-    await page.waitForTimeout(2000);
-    allCites.push(await fillCiteData(page));
+    try {
+      await page.goto(URL);
+      await page.waitForTimeout(2000);
+      allCites.push(await fillCiteData(page));
+    } catch {
+      console.log("Something was wrong with getting info from ID: ", id)
+    }
   }
 
   await browser.close();
@@ -405,7 +413,7 @@ const params = {
 |`pagesLimit`|limit of pages for getting info. If you want to limit the number of pages for getting info you need to define the last page number in this|
 |`engine`|search engine|
 |`q`|search query|
-|`hl`|parameter defines the language to use for the Google search|
+|`hl`|parameter defines the language to use for the Google Scholar search|
 
 Next, we wrap the search method from the SerpApi library in a promise to further work with the search results:
 
@@ -508,7 +516,7 @@ getResults().then((result) => console.dir(result, { depth: null }))
 <h2 id='links'>Links</h2>
 
 * [Code in the online IDE](https://replit.com/@MikhailZub/Google-Scholar-Cite-NodeJS-SerpApi#index.js) 
-* [Google Scholar API](https://serpapi.com/google-scholar-api)
+* [Google Scholar Cite API](https://serpapi.com/google-scholar-cite-api)
 
 If you want to see some projects made with SerpApi, please write me a message.
 

@@ -70,9 +70,13 @@ async function getScholarCitesInfo() {
 
   for (id of citesId) {
     const URL = `${domain}/scholar?q=info:${id}:scholar.google.com/&output=cite&hl=${requestParams.hl}`;
-    await page.goto(URL);
-    await page.waitForTimeout(2000);
-    allCites.push(await fillCiteData(page));
+    try {
+      await page.goto(URL);
+      await page.waitForTimeout(2000);
+      allCites.push(await fillCiteData(page));
+    } catch {
+      console.log("Something was wrong with getting info from ID: ", id)
+    }
   }
 
   await browser.close();
