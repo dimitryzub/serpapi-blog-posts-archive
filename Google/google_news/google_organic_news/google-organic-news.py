@@ -28,6 +28,7 @@ news_results = []
 decoded_thumbnails = []
 
 for _id in selector.css(".YEMaTe img::attr(id)"):
+    # https://regex101.com/r/FZktSD/1
     thumbnails = re.findall(r"s=\'([^']+)\'\;var\s?ii\=\['{_id}'\];".format(_id=_id.get()), str(all_script_tags))
 
     decoded_thumbnail = [
