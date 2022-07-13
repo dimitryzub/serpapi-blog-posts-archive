@@ -1,11 +1,8 @@
-
-# TODO: check if the code is working correctly. Before results was blocked by Google.
 # https://replit.com/@DimitryZub1/DimLustrousBoards#main.py
 
 
-import requests, lxml, json, re
+import requests, json, re
 from parsel import Selector
-from itertools import zip_longest
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.114 Safari/537.36"
@@ -13,10 +10,10 @@ headers = {
 
 params = {
     "q": "gta san andreas",  # search query
-    "hl": "en",  # language of the search
-    "gl": "us",  # country of the search
-    "num": "10",  # number of search results per page
-    "tbm": "nws",  # news results
+    "hl": "en",              # language of the search
+    "gl": "us",              # country of the search
+    "num": "100",            # number of search results per page
+    "tbm": "nws"             # news results
 }
 
 html = requests.get("https://www.google.com/search", headers=headers, params=params, timeout=30)
