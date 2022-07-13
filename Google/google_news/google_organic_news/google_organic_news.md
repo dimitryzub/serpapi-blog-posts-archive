@@ -1,7 +1,7 @@
 - <a href="#what_will_be_scraped">What will be scraped</a>
 - <a href="#prerequisites">Prerequisites</a>
 - <a href="#fullcode">Full Code</a>
-- <a href="#code_explanation">Code Exmplanation</a>
+    - <a href="#code_explanation">Code Exmplanation</a>
 - <a href="#links">Links</a>
 
 <h2 id="what_will_be_scraped">What will be scraped</h2>
@@ -48,31 +48,161 @@ Basically, `user-agent` let identifies the browser, its version number, and its 
 <h2 id="fullcode">Full Code</h2>
 
 ```python
-import requests, lxml
-from bs4 import BeautifulSoup
+import requests, json, re
+from parsel import Selector
 
 headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36 Edge/18.19582"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.114 Safari/537.36"
 }
 
 params = {
-    "q": "gta san andreas",
-    "hl": "en",
-    "tbm": "nws",
+    "q": "gta san andreas",  # search query
+    "hl": "en",              # language of the search
+    "gl": "us",              # country of the search
+    "num": "100",            # number of search results per page
+    "tbm": "nws"             # news results
 }
 
-response = requests.get("https://www.google.com/search", headers=headers, params=params)
-soup = BeautifulSoup(response.text, 'lxml')
+html = requests.get("https://www.google.com/search", headers=headers, params=params, timeout=30)
+selector = Selector(text=html.text)
 
-for result in soup.select('.dbsr'):
-    title = result.select_one('.nDgy9d').text
-    link = result.a['href']
-    source = result.select_one('.WF4CUc').text
-    snippet = result.select_one('.Y3v8qd').text
-    date_published = result.select_one('.WG9SHc span').text
-    print(f'{title}\n{link}\n{snippet}\n{date_published}\n{source}\n')
+news_results = []
+
+# extract thumbnails
+all_script_tags = selector.css("script::text").getall()
+
+for result, thumbnail_id in zip(selector.css(".xuvV6b"), selector.css(".FAkayc img::attr(id)")):
+    thumbnails = re.findall(r"s=\'([^']+)\'\;var\s?ii\=\['{_id}'\];".format(_id=thumbnail_id.get()), str(all_script_tags))
+
+    decoded_thumbnail = "".join([
+        bytes(bytes(img, "ascii").decode("unicode-escape"), "ascii").decode("unicode-escape") for img in thumbnails
+    ])
+    
+    news_results.append(
+        {
+            "title": result.css(".MBeuO::text").get(),
+            "link": result.css("a.WlydOe::attr(href)").get(),
+            "source": result.css(".NUnG9d span::text").get(),
+            "snippet": result.css(".GI74Re::text").get(),
+            "date_published": result.css(".ZE0LJd span::text").get(),
+            "thumbnail": None if decoded_thumbnail == "" else decoded_thumbnail
+        }
+    )
+
+print(json.dumps(news_results, indent=2, ensure_ascii=False))
 ```
 
+<h3 id="code_explanation">Code Explanation</h3>
+
+Import libraries:
+
+```python
+import requests, json, re
+from parsel import Selector
+```
+
+| Library       | Purpose                                                            |
+|---------------|--------------------------------------------------------------------|
+| `requests`    | to make a request to the website.                                  |
+| `json`        | to convert extracted data to a JSON object.                        |
+| `re`          | to extract parts of the data via regular expression.               |
+| `parsel`      | to parse data from HTML/XML documents. Similar to `BeautifulSoup`. |
+
+
+
+Create request headers and URL parameters:
+
+```python
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.114 Safari/537.36"
+}
+
+params = {
+    "q": "gta san andreas",  # search query
+    "hl": "en",              # language of the search
+    "gl": "us",              # country of the search
+    "num": "100",            # number of search results per page
+    "tbm": "nws"             # news results
+}
+```
+
+| Code                                                                      | Explnation                                           |
+|------------------------------------------------------------------------------|---------------------------------------------------|
+| [`params` ](https://docs.python-requests.org/en/master/user/quickstart/#passing-parameters-in-urls)                                                                      |a prettier way of passing URL parameters to a request. |
+| [`user-agent`](https://developer.mozilla.org/en-US/docs/Glossary/User_agent) | to act as a "real" user request from the browser by passing it to [request headers](https://docs.python-requests.org/en/master/user/quickstart/#custom-headers). [Default `requests` user-agent is a `python-reqeusts`](https://github.com/psf/requests/blob/589c4547338b592b1fb77c65663d8aa6fbb7e38b/requests/utils.py#L808-L814) so websites might understand that it's a bot or a script and block the request to the webiste. [Check what's your `user-agent`](https://www.whatismybrowser.com/detect/what-is-my-user-agent). |
+
+
+Make a request, pass created requests parameters and headers. Pass returned HTML to `parsel`: 
+
+```python
+html = requests.get("https://www.google.com/search", headers=headers, params=params, timeout=30)
+selector = Selector(text=html.text)
+```
+
+|Code|Explanation|
+|----|-----------|
+|[`timeout=30`](https://docs.python-requests.org/en/master/user/quickstart/#timeouts)| to stop waiting for response after 30 secods.|
+|`Selector(text=html.text)`|where passed HTML from the response will be processed by `parsel`.|
+
+Create an empty `list` to store extracted news results:
+
+```python
+news_results = []
+```
+Create a variable that will hold all `<script>` tags from the page:
+
+```python
+all_script_tags = selector.css("script::text").getall()
+```
+
+|Code|Explanation|
+|----|-----------|
+|`css()`| is a `parsel` method that extracts nodes based on a given CSS selector.|
+|`::text`|is a [`parsel` own pseudo-element support](https://github.com/scrapy/parsel/blob/90397dcd0b2c1cbb91e44f65c50f9e11628ba028/parsel/csstranslator.py#L48-L51) [which will translate every CSS query to XPath](https://github.com/scrapy/parsel/blob/90397dcd0b2c1cbb91e44f65c50f9e11628ba028/parsel/selector.py#L351-L363). In this case `::text` would become `/text()` if using XPath directly.|
+|`getall()`|[returns a `list` of matched nodes](https://github.com/scrapy/parsel/blob/90397dcd0b2c1cbb91e44f65c50f9e11628ba028/parsel/selector.py#L180-L185).|
+
+
+Iterate over news results and extract the data:
+
+```python
+for result, thumbnail_id in zip(selector.css(".xuvV6b"), selector.css(".FAkayc img::attr(id)")):
+    thumbnails = re.findall(r"s=\'([^']+)\'\;var\s?ii\=\['{_id}'\];".format(_id=thumbnail_id.get()), str(all_script_tags))
+
+    decoded_thumbnail = "".join([
+        bytes(bytes(img, "ascii").decode("unicode-escape"), "ascii").decode("unicode-escape") for img in thumbnails
+    ])
+```
+
+|Code|Explanation|
+|----|-----------|
+|[`zip()`](https://docs.python.org/3/library/functions.html#zip)|to iterate over several iterables in parallel. In this case `zip` is used to also extract thumbnails that are located in the `<script>` tags.|
+|`::attr(id)`|is a `parsel`[`parsel` own pseudo-element support](https://github.com/scrapy/parsel/blob/90397dcd0b2c1cbb91e44f65c50f9e11628ba028/parsel/csstranslator.py#L48-L51) that will extract given attribute from an HTML node.|
+|[`re.findall()`](https://docs.python.org/3/library/re.html#re.findall)|to match parts of the data from HTML using regular expression pattern. In this case, we want to match thumbnails. If you parse thumbnails directly from the HTML, you'll get a 1x1 image placeholder, not thumbnail. `findall` returns a `list` of matches.|
+|`format(_id=thumbnail_id.get())`|[`format` is a Python string format](https://www.w3schools.com/python/ref_string_format.asp) which insert passed values inside the string's placeholder, which is `_id` in this case: `\['{_id}'\];`|
+|`str(all_script_tags)`|is used to [type cast](https://www.w3schools.com/python/python_casting.asp) returned value to a `string` type.|
+|[`"".join()`](https://docs.python.org/3/library/stdtypes.html#str.join)|to join all items into a single string. Since this example uses [list comprehension](https://www.w3schools.com/python/python_lists_comprehension.asp), the returned output would be a `list` or each processed element: `[1]` `[2]` `[3]` or `[]` if empty. `join` will ~~convert~~ join `list` to `str`|
+|`bytes(img, "ascii").decode("unicode-escape")`|is basically to convert bytes `img` characters to an ascii format and convert to utf-8.|
+
+Append extracted results to a temporary `list` as a `dict`:
+
+```python
+news_results.append(
+    {
+        "title": result.css(".MBeuO::text").get(),
+        "link": result.css("a.WlydOe::attr(href)").get(),
+        "source": result.css(".NUnG9d span::text").get(),
+        "snippet": result.css(".GI74Re::text").get(),
+        "date_published": result.css(".ZE0LJd span::text").get(),
+        "thumbnail": None if decoded_thumbnail == "" else decoded_thumbnail,
+    }
+)
+```
+
+Print extracted data:
+
+```python
+print(json.dumps(news_results, indent=2, ensure_ascii=False))
+```
 
 ### Using [Google News Result API](https://serpapi.com/news-results)
 
