@@ -17,13 +17,16 @@ To do this, in the directory with our project, open the command line and enter `
 <h2 id='process'>Process</h2>
 
 [SelectorGadget Chrome extension](https://chrome.google.com/webstore/detail/selectorgadget/mhjhnkcfbdhnjickkkdbjoemdmbfginb) was used to grab CSS selectors by clicking on the desired element in the browser. If you have any struggles understanding this, we have a dedicated [Web Scraping with CSS Selectors blog post](https://serpapi.com/blog/web-scraping-with-css-selectors-using-python/) at SerpApi.
+
 The Gif below illustrates the approach of selecting different parts of the results.
 
 ![how](https://user-images.githubusercontent.com/64033139/178461319-ac26ce42-83e3-4a70-ae95-fe8f591e8b61.gif)
 
 <h2 id='full_code'>Full code</h2>
 
-📌Note: To make our search more relevant we need to add GPS coordinates parameter. It has to be constructed in the next sequence: `@` + `latitude` + `,` + `longitude` + `,` + `zoom`. This will form a string that looks like this: e.g. `@47.6040174,-122.1854488,11z`. The zoom parameter is optional but recommended for higher precision (it ranges from `3z`, map completely zoomed out - to `21z`, map completely zoomed in).
+📌Notes: 
+* To make our search more relevant we need to add GPS coordinates parameter. It has to be constructed in the next sequence: `@` + `latitude` + `,` + `longitude` + `,` + `zoom`. This will form a string that looks like this: e.g. `@47.6040174,-122.1854488,11z`. The zoom parameter is optional but recommended for higher precision (it ranges from `3z`, map completely zoomed out - to `21z`, map completely zoomed in). We have a dedicated video on our YouTube channel explaining [What's and Why's about Google Maps GPS Coordinates](https://www.youtube.com/watch?v=HugsLaQR0GA&t=15s).
+* Sometimes Google displays results from local places using pagination, and sometimes it loads more results as you scroll. This code works for both cases. If pagination is displayed in your case, you need to uncomment the `while` loop and internal lines in the `getLocalPlacesInfo` function.
 
 ```javascript
 const puppeteer = require("puppeteer-extra");
@@ -102,14 +105,14 @@ async function getLocalPlacesInfo() {
 
   const localPlacesInfo = [];
 
-  while (true) {
+  // while (true) {
     await page.waitForTimeout(2000);
-    const nextPageBtn = await page.$("#eY4Fjd:not([disabled])");
-    if (!nextPageBtn) break;
+    // const nextPageBtn = await page.$("#eY4Fjd:not([disabled])");
+    // if (!nextPageBtn) break;
     await scrollPage(page, scrollContainer);
     localPlacesInfo.push(...(await fillDataFromPage(page)));
-    await page.click("#eY4Fjd");
-  }
+    // await page.click("#eY4Fjd");
+  // }
 
   await browser.close();
 
@@ -248,14 +251,14 @@ async function getLocalPlacesInfo() {
 
   const localPlacesInfo = [];
 
-  while (true) {
+  // while (true) {
     await page.waitForTimeout(2000);
-    const nextPageBtn = await page.$("#eY4Fjd:not([disabled])");
-    if (!nextPageBtn) break;
+    // const nextPageBtn = await page.$("#eY4Fjd:not([disabled])");
+    // if (!nextPageBtn) break;
     await scrollPage(page, scrollContainer);
     localPlacesInfo.push(...(await fillDataFromPage(page)));
-    await page.click("#eY4Fjd");
-  }
+    // await page.click("#eY4Fjd");
+  // }
 
   await browser.close();
 
