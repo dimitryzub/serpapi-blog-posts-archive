@@ -644,7 +644,7 @@ The difference is that you won't have to write code from scratch and maintain it
 
 First, we need to install [`google-search-results-nodejs`](https://www.npmjs.com/package/google-search-results-nodejs). To do this you need to enter in your console: `npm i google-search-results-nodejs`
 
-📌Note: To make our search we need the `data` parameter, which must be set in the next format: `!4m5!3m4!1s` + `data_id` + `!8m2!3d` + `latitude` + `!4d` + `longitude`. The `data_id`, `latitude` and `longitude` you can take using the guide from my blog post ["Web Scraping Google Maps Places with Nodejs"](https://serpapi.com/blog/p/8d7efc52-ba20-447e-824c-dcbb472b9c7e/).
+📌Note: To make our search we need the `data` parameter, which must be set in the next format: `!4m5!3m4!1s` + `data_id` + `!8m2!3d` + `latitude` + `!4d` + `longitude`. The `data_id`, `latitude` and `longitude` you can take using the guide from my blog post ["Web Scraping Google Maps Places with Nodejs"](https://serpapi.com/blog/web-scraping-google-maps-places-with-nodejs/).
 
 ```javascript
 const SerpApi = require("google-search-results-nodejs");
