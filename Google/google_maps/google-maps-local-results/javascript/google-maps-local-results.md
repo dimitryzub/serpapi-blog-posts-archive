@@ -330,7 +330,7 @@ Now we can launch our parser. To do this enter `node YOUR_FILE_NAME` in your com
 ]
 ```
 
-<h2 id='serp_api'>Google Scholar Author API</h2>
+<h2 id='serp_api'>Google Maps Local Results API</h2>
 
 Alternatively, you can use the [Google Maps Local Results API](https://serpapi.com/maps-local-results) from SerpApi. SerpApi is a free API with 100 searches per month. If you need more searches, there are paid plans.
 
@@ -338,7 +338,7 @@ The difference is that you won't have to write code from scratch and maintain it
 
 First, we need to install [`google-search-results-nodejs`](https://www.npmjs.com/package/google-search-results-nodejs). To do this you need to enter in your console: `npm i google-search-results-nodejs`
 
-📌Note: To make our search more relevant we need to add GPS coordinates parameter. It has to be constructed in the next sequence: `@` + `latitude` + `,` + `longitude` + `,` + `zoom`. This will form a string that looks like this: e.g. `@47.6040174,-122.1854488,11z`. The zoom parameter is optional but recommended for higher precision (it ranges from `3z`, map completely zoomed out - to `21z`, map completely zoomed in).
+📌Note: To make our search more relevant we need to add GPS coordinates parameter. It has to be constructed in the next sequence: `@` + `latitude` + `,` + `longitude` + `,` + `zoom`. This will form a string that looks like this: e.g. `@47.6040174,-122.1854488,11z`. The zoom parameter is optional but recommended for higher precision (it ranges from `3z`, map completely zoomed out - to `21z`, map completely zoomed in). We have a dedicated video on our YouTube channel explaining [What's and Why's about Google Maps GPS Coordinates](https://www.youtube.com/watch?v=HugsLaQR0GA&t=15s).
 
 ```javascript
 const SerpApi = require("google-search-results-nodejs");
