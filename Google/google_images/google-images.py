@@ -1,4 +1,3 @@
-from timeit import default_timer as timer
 import requests, lxml, re, json, urllib.request
 from bs4 import BeautifulSoup
 
@@ -26,51 +25,43 @@ def get_images_with_request_headers():
     params["content-type"] = "image/png"
 
     soup = return_html()
-    images = [img["src"] for img in soup.select("img")]
-
-    return images
+    return [img["src"] for img in soup.select("img")]
 
 def get_suggested_search_data():
     soup = return_html()
-    print(soup)
 
     suggested_searches = []
-
-    # for suggested_search in soup.select(".PKhmud.sc-it.tzVsfd"):
-    #     suggested_searches.append({
-    #         "suggested_search_name": suggested_search.select_one(".VlHyHc").text,
-    #         "suggested_search_link": f"https://www.google.com{suggested_search.a['href']}",
-    #         # https://regex101.com/r/y51ZoC/1
-    #         "suggested_search_chips": ''.join(re.findall(r"=isch&chips=(.*?)&hl=en-US", suggested_search.a["href"])) 
-    #     })
 
     all_script_tags = soup.select("script")
 
     # https://regex101.com/r/48UZhY/6
-    matched_images_data = ''.join(re.findall(r"AF_initDataCallback\(({key: 'ds:1'.*?)\);</script>", str(all_script_tags)))
+    matched_images = ''.join(re.findall(r"AF_initDataCallback\(({key: 'ds:1'.*?)\);</script>", str(all_script_tags)))
     
     # https://kodlogs.com/34776/json-decoder-jsondecodeerror-expecting-property-name-enclosed-in-double-quotes
     # if you try to json.loads() without json.dumps it will throw an error:
     # "Expecting property name enclosed in double quotes"
-    matched_images_data_fix = json.dumps(matched_images_data)
+    matched_images_data_fix = json.dumps(matched_images)
     matched_images_data_json = json.loads(matched_images_data_fix)
 
     # search for only suggested search thumbnails related
     # https://regex101.com/r/ITluak/2
-    suggested_search_thumbnails_data = ','.join(re.findall(r'{key(.*?)\[null,\"Size\"', matched_images_data_json))
+    suggested_search_thumbnails = ','.join(re.findall(r'{key(.*?)\[null,\"Size\"', matched_images_data_json))
 
     # https://regex101.com/r/MyNLUk/1
-    suggested_search_thumbnail_links_not_fixed = re.findall(r'\"(https:\/\/encrypted.*?)\"', suggested_search_thumbnails_data)
+    suggested_search_thumbnail_encoded = re.findall(r'\"(https:\/\/encrypted.*?)\"', suggested_search_thumbnails)
 
-    # for suggested_search_fixed_thumbnail in suggested_search_thumbnail_links_not_fixed:
-    #     suggested_searches.append({
-    #         # https://stackoverflow.com/a/4004439/15164646 comment by Frédéric Hamidi
-    #         "suggested_search_thumbnail": bytes(suggested_search_fixed_thumbnail, 'ascii').decode('unicode-escape')    
-    #     })
+    for suggested_search, suggested_search_fixed_thumbnail in zip(soup.select(".PKhmud.sc-it.tzVsfd"), suggested_search_thumbnail_encoded):
+        suggested_searches.append({
+            "name": suggested_search.select_one(".VlHyHc").text,
+            "link": f"https://www.google.com{suggested_search.a['href']}",
+            # https://regex101.com/r/y51ZoC/1
+            "chips": ''.join(re.findall(r"&chips=(.*?)&", suggested_search.a["href"])),
+            # https://stackoverflow.com/a/4004439/15164646 comment by Frédéric Hamidi
+            "thumbnail": bytes(suggested_search_fixed_thumbnail, 'ascii').decode('unicode-escape')
+        })
 
-    # return suggested_searches
+    return suggested_searches
 
-# print(json.dumps(get_suggested_search_data(), indent=2))
 
 def get_original_images():
     soup = return_html()
@@ -139,4 +130,4 @@ def get_original_images():
 
         # urllib.request.urlretrieve(original_size_img, f'Bs4_Images/original_size_img_{index}.jpg')
 
-get_original_images()
+print(json.dumps(get_original_images(), indent=2))
