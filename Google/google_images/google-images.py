@@ -107,19 +107,16 @@ def get_original_images():
             "original": original
         })
 
+    # Download original images
+    # print(f'Downloading {index} image...')
+    
+    # opener=urllib.request.build_opener()
+    # opener.addheaders=[('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36')]
+    # urllib.request.install_opener(opener)
+
+    # urllib.request.urlretrieve(original_size_img, f'Bs4_Images/original_size_img_{index}.jpg')
+
     return google_images
-
-
-        # Download original images
-        # print(f'Downloading {index} image...')
-        
-        # opener=urllib.request.build_opener()
-        # opener.addheaders=[('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36')]
-        # urllib.request.install_opener(opener)
-
-        # urllib.request.urlretrieve(original_size_img, f'Bs4_Images/original_size_img_{index}.jpg')
-
-
 
 def serpapi_get_google_images():
     image_results = []
@@ -154,9 +151,6 @@ def serpapi_get_google_images():
                 images_is_present = False
                 print(results["error"])
     
-    print(json.dumps(image_results, indent=2))
-    print(len(image_results))
-
     # -----------------------
     # Downloading images
 
@@ -169,3 +163,6 @@ def serpapi_get_google_images():
     #     urllib.request.install_opener(opener)
 
     #     urllib.request.urlretrieve(image['original'], f'SerpApi_Images/original_size_img_{index}.jpg')
+
+    print(json.dumps(image_results, indent=2))
+    print(len(image_results))
