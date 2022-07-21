@@ -141,7 +141,7 @@ def get_original_images():
 pip install requests bs4 google-search-results
 ```
 
-`google-search-results` is a SerpApi API package.
+`google-search-results` is a SerpApi API package that will be shown at the end as an alternative solution.
 
 **Basic knowledge scraping with CSS selectors**
 
@@ -172,7 +172,7 @@ from serpapi import GoogleSearch
 
 | Library       | Purpose                                                            |
 |---------------|--------------------------------------------------------------------|
-| [`os`](https://docs.python.org/3/library/os.html)    | to return environement variable (SerpApi API key) value.                                  |
+| [`os`](https://docs.python.org/3/library/os.html)    | to return environment variable (SerpApi API key) value.                                  |
 | [`requests`](https://requests.readthedocs.io/en/latest/user/quickstart/)    | to make a request to the website.                                  |
 | [`lxml`](https://lxml.de/)    | to process XML/HTML documents fast.                                  |
 | [`json`](https://docs.python.org/3/library/json.html)        | to convert extracted data to a JSON object.                        |
@@ -291,7 +291,7 @@ def get_suggested_search_data():
     # https://regex101.com/r/MyNLUk/1
     suggested_search_thumbnail_encoded = re.findall(r'\"(https:\/\/encrypted.*?)\"', suggested_search_thumbnails)
 
-    # zip() is used on puprose over zip_longest() as number of results would be identical
+    # zip() is used on purpose over zip_longest() as number of results would be identical
     for suggested_search, suggested_search_fixed_thumbnail in zip(soup.select(".PKhmud.sc-it.tzVsfd"), suggested_search_thumbnail_encoded):
         suggested_searches.append({
             "name": suggested_search.select_one(".VlHyHc").text,
@@ -309,13 +309,13 @@ def get_suggested_search_data():
 |----|-----------|
 |`suggested_searches`|a temporary `list` where extracted data will be [appended](https://www.w3schools.com/python/ref_list_append.asp) at the end of the function.|
 |`all_script_tags`|a variable which will hold all extracted `<script>` HTML tags from `soup.select("script")` where [`select()`](https://www.crummy.com/software/BeautifulSoup/bs4/doc/#css-selectors) will return a list of matched `<script>` tags.|
-|`matched_images`|will hold all extracted matched images data from [`re.findall()`](https://docs.python.org/3/library/re.html#re.findall) which returns an [iterator](https://docs.python.org/3/glossary.html#term-iterator). This variable is needed to extract suggested search thumbnails, image thumbnail and full resolution images.|
-|`suggested_search_thumbnails` and `suggested_search_thumbnail_encoded`|parses part of inline JSON where `suggested_search_thumbnail_encoded` parses actual thubmnails from parlty parsed inline JSON data.|
-|[`zip()`](https://docs.python.org/3/library/functions.html#zip)|to iterate over multiple iterables in parralel. Keep in mind that `zip` used on puprose. [`zip()` ends with the shortest iterator while `zip_longest()` iterates up to the lenght of the longest iterator](https://stackoverflow.com/a/59119827/15164646).|
+|`matched_images`|will hold all extracted matched images data from [`re.findall()`](https://docs.python.org/3/library/re.html#re.findall) which returns an [iterator](https://docs.python.org/3/glossary.html#term-iterator). This variable is needed to extract suggested search thumbnails, image thumbnails and full-resolution images.|
+|`suggested_search_thumbnails` and `suggested_search_thumbnail_encoded`|parses part of inline JSON where `suggested_search_thumbnail_encoded` parses actual thumbnails from partly parsed inline JSON data.|
+|[`zip()`](https://docs.python.org/3/library/functions.html#zip)|to iterate over multiple iterables in parralel. Keep in mind that `zip` is used on purpose. [`zip()` ends with the shortest iterator while `zip_longest()` iterates up to the length of the longest iterator](https://stackoverflow.com/a/59119827/15164646).|
 |`suggested_searches.append({})`|to [`append` extracted images data to a `list`](https://www.w3schools.com/python/ref_list_append.asp) as a dictionary.|
 |`select_one()`|to return one (instead of all) matched element in a loop.|
 |`["href"]`|is a shortcut of accessing and [extracting HTML attributes with `BeautifulSoup`. Alternative is `get(<attribute>)`](https://www.crummy.com/software/BeautifulSoup/bs4/doc/#attributes).|
-|[`"".join()`](https://www.w3schools.com/python/ref_string_join.asp)|to join all itemes from in iterable into a string.|
+|[`"".join()`](https://www.w3schools.com/python/ref_string_join.asp)|to join all items from in iterable into a string.|
 |`bytes(<variable>, "ascii").decode("unicode-escape")`|to decode parsed image data.|
 
 Printed returned data:
@@ -403,15 +403,15 @@ def get_original_images():
     return google_images
 ```
 
-The process is almost identical as extracting suggested search results except different regular expressions:
+The process is almost identical to extracting suggested search results except for different regular expressions:
 
-1\. Creating temporary `list` `google_images` where extracted data will be appended.
+1\. Create a temporary `list` `google_images` where extracted data will be appended.
 
 2\. Extracting `all_script_tags`.
 
 3\. Extracting `matched_images_data` to extract thumbnails and original resolution images.
 
-4\. Decode extracted encoded `thubmnails`:
+4\. Decode extracted encoded `thumbnails`:
 
 ```python
 thumbnails = [
@@ -482,9 +482,9 @@ Printed returned data:
 
 ### Using [Google Images API](https://serpapi.com/images-results)
 
-The main difference is that it's a quicker approach. No need to figure out regular expressions, create a parser and maintain it over time or how scale the number of requests without being blocked.
+The main difference is that it's a quicker approach. No need to figure out regular expressions, create a parser and maintain it over time, or how to scale the number of requests without being blocked.
 
-Example with pagination and mulptiple search queries:
+Example with pagination and multiple search queries:
 
 ```python
 def serpapi_get_google_images():
