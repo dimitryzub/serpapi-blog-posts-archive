@@ -13,29 +13,22 @@ params = {
     "ijn": "0"                    # page number
 }
 
-
-def return_html():
-    html = requests.get("https://www.google.com/search", params=params, headers=headers, timeout=30)
-    soup = BeautifulSoup(html.text, "lxml")
-
-    return soup
+html = requests.get("https://www.google.com/search", params=params, headers=headers, timeout=30)
+soup = BeautifulSoup(html.text, "lxml")
 
 def get_images_with_request_headers():
     del params['ijn']
     params["content-type"] = "image/png"
 
-    soup = return_html()
     return [img["src"] for img in soup.select("img")]
 
 def get_suggested_search_data():
-    soup = return_html()
-
     suggested_searches = []
 
     all_script_tags = soup.select("script")
 
     # https://regex101.com/r/48UZhY/6
-    matched_images = ''.join(re.findall(r"AF_initDataCallback\(({key: 'ds:1'.*?)\);</script>", str(all_script_tags)))
+    matched_images = "".join(re.findall(r"AF_initDataCallback\(({key: 'ds:1'.*?)\);</script>", str(all_script_tags)))
     
     # https://kodlogs.com/34776/json-decoder-jsondecodeerror-expecting-property-name-enclosed-in-double-quotes
     # if you try to json.loads() without json.dumps it will throw an error:
@@ -45,7 +38,7 @@ def get_suggested_search_data():
 
     # search for only suggested search thumbnails related
     # https://regex101.com/r/ITluak/2
-    suggested_search_thumbnails = ','.join(re.findall(r'{key(.*?)\[null,\"Size\"', matched_images_data_json))
+    suggested_search_thumbnails = ",".join(re.findall(r'{key(.*?)\[null,\"Size\"', matched_images_data_json))
 
     # https://regex101.com/r/MyNLUk/1
     suggested_search_thumbnail_encoded = re.findall(r'\"(https:\/\/encrypted.*?)\"', suggested_search_thumbnails)
@@ -55,33 +48,28 @@ def get_suggested_search_data():
             "name": suggested_search.select_one(".VlHyHc").text,
             "link": f"https://www.google.com{suggested_search.a['href']}",
             # https://regex101.com/r/y51ZoC/1
-            "chips": ''.join(re.findall(r"&chips=(.*?)&", suggested_search.a["href"])),
+            "chips": "".join(re.findall(r"&chips=(.*?)&", suggested_search.a["href"])),
             # https://stackoverflow.com/a/4004439/15164646 comment by Frédéric Hamidi
-            "thumbnail": bytes(suggested_search_fixed_thumbnail, 'ascii').decode('unicode-escape')
+            "thumbnail": bytes(suggested_search_fixed_thumbnail, "ascii").decode("unicode-escape")
         })
 
     return suggested_searches
 
-
 def get_original_images():
-    soup = return_html()
-    
-    print('\nGoogle Images Metadata:')
-    for google_image in soup.select('.isv-r.PNCib.MSM1fd.BUooTd'):
-        title = google_image.select_one('.VFACy.kGQAp.sMi44c.lNHeqe.WGvvNb')['title']
-        source = google_image.select_one('.fxgdke').text
-        link = google_image.select_one('.VFACy.kGQAp.sMi44c.lNHeqe.WGvvNb')['href']
-        
-        print(f'{title}\n{source}\n{link}\n')
 
-    all_script_tags = soup.select('script')
+    """
+    https://kodlogs.com/34776/json-decoder-jsondecodeerror-expecting-property-name-enclosed-in-double-quotes
+    if you try to json.loads() without json.dumps() it will throw an error:
+    "Expecting property name enclosed in double quotes"
+    """
 
-    # https://regex101.com/r/48UZhY/4
-    matched_images_data = ''.join(re.findall(r"AF_initDataCallback\(([^<]+)\);", str(all_script_tags)))
+    google_images = []
+
+    all_script_tags = soup.select("script")
+
+    # # https://regex101.com/r/48UZhY/4
+    matched_images_data = "".join(re.findall(r"AF_initDataCallback\(([^<]+)\);", str(all_script_tags)))
     
-    # https://kodlogs.com/34776/json-decoder-jsondecodeerror-expecting-property-name-enclosed-in-double-quotes
-    # if you try to json.loads() without json.dumps() it will throw an error:
-    # "Expecting property name enclosed in double quotes"
     matched_images_data_fix = json.dumps(matched_images_data)
     matched_images_data_json = json.loads(matched_images_data_fix)
 
@@ -89,36 +77,36 @@ def get_original_images():
     matched_google_image_data = re.findall(r'\[\"GRID_STATE0\",null,\[\[1,\[0,\".*?\",(.*),\"All\",', matched_images_data_json)
 
     # https://regex101.com/r/NnRg27/1
-    matched_google_images_thumbnails = ', '.join(
+    matched_google_images_thumbnails = ", ".join(
         re.findall(r'\[\"(https\:\/\/encrypted-tbn0\.gstatic\.com\/images\?.*?)\",\d+,\d+\]',
-                   str(matched_google_image_data))).split(', ')
+                   str(matched_google_image_data))).split(", ")
 
-    print('Google Image Thumbnails:')  # in order
-    for fixed_google_image_thumbnail in matched_google_images_thumbnails:
-        # https://stackoverflow.com/a/4004439/15164646 comment by Frédéric Hamidi
-        google_image_thumbnail_not_fixed = bytes(fixed_google_image_thumbnail, 'ascii').decode('unicode-escape')
-
-        # after first decoding, Unicode characters are still present. After the second iteration, they were decoded.
-        google_image_thumbnail = bytes(google_image_thumbnail_not_fixed, 'ascii').decode('unicode-escape')
-        print(google_image_thumbnail)
+    thumbnails = [
+        bytes(bytes(thumbnail, "ascii").decode("unicode-escape"), "ascii").decode("unicode-escape") for thumbnail in matched_google_images_thumbnails
+    ]
 
     # removing previously matched thumbnails for easier full resolution image matches.
     removed_matched_google_images_thumbnails = re.sub(
-        r'\[\"(https\:\/\/encrypted-tbn0\.gstatic\.com\/images\?.*?)\",\d+,\d+\]', '', str(matched_google_image_data))
+        r'\[\"(https\:\/\/encrypted-tbn0\.gstatic\.com\/images\?.*?)\",\d+,\d+\]', "", str(matched_google_image_data))
 
     # https://regex101.com/r/fXjfb1/4
     # https://stackoverflow.com/a/19821774/15164646
-    matched_google_full_resolution_images = re.findall(r"(?:'|,),\[\"(https:|http.*?)\",\d+,\d+\]",
-                                                       removed_matched_google_images_thumbnails)
+    matched_google_full_resolution_images = re.findall(r"(?:'|,),\[\"(https:|http.*?)\",\d+,\d+\]", removed_matched_google_images_thumbnails)
 
-    print('\nFull Resolution Images:')  # in order
-    for index, fixed_full_res_image in enumerate(matched_google_full_resolution_images):
-        
-        # https://stackoverflow.com/a/4004439/15164646 comment by Frédéric Hamidi
-        original_size_img_not_fixed = bytes(fixed_full_res_image, 'ascii').decode('unicode-escape')
-        original_size_img = bytes(original_size_img_not_fixed, 'ascii').decode('unicode-escape')
+    full_res_images = [
+        bytes(bytes(img, "ascii").decode("unicode-escape"), "ascii").decode("unicode-escape") for img in matched_google_full_resolution_images
+    ]
+    
+    for metadata, thumbnail, original in zip(soup.select('.isv-r.PNCib.MSM1fd.BUooTd'), thumbnails, full_res_images):
+        google_images.append({
+            "title": metadata.select_one(".VFACy.kGQAp.sMi44c.lNHeqe.WGvvNb")["title"],
+            "link": metadata.select_one(".VFACy.kGQAp.sMi44c.lNHeqe.WGvvNb")["href"],
+            "source": metadata.select_one(".fxgdke").text,
+            "thumbnail": thumbnail,
+            "original": original
+        })
 
-        print(original_size_img)
+    return google_images
 
 
         # Download original images
@@ -129,5 +117,3 @@ def get_original_images():
         # urllib.request.install_opener(opener)
 
         # urllib.request.urlretrieve(original_size_img, f'Bs4_Images/original_size_img_{index}.jpg')
-
-print(json.dumps(get_original_images(), indent=2))
