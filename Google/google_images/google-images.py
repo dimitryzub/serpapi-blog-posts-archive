@@ -1,5 +1,6 @@
-import requests, lxml, re, json, urllib.request
+import os, requests, lxml, re, json, urllib.request
 from bs4 import BeautifulSoup
+from serpapi import GoogleSearch
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.114 Safari/537.36"
@@ -117,3 +118,54 @@ def get_original_images():
         # urllib.request.install_opener(opener)
 
         # urllib.request.urlretrieve(original_size_img, f'Bs4_Images/original_size_img_{index}.jpg')
+
+
+
+def serpapi_get_google_images():
+    image_results = []
+    
+    for query in ["Coffee", "boat", "skyrim", "minecraft"]:
+        params = {
+            "engine": "google",               # search engine. Google, Bing, Yahoo, Naver, Baidu...
+            "q": query,                       # search query
+            "tbm": "isch",                    # image results
+            "num": "100",                     # number of images per page
+            "ijn": 0,                         # page number: 0 -> first page, 1 -> second...
+            "api_key": os.getenv("API_KEY")   # your serpapi api key
+            # other query parameters: hl (lang), gl (country), etc  
+        }
+    
+        search = GoogleSearch(params)         # where data extraction happens
+    
+        images_is_present = True
+        while images_is_present:
+            results = search.get_dict()       # JSON -> Python dictionary
+    
+            # checks for "Google hasn't returned any results for this query."
+            if "error" not in results:
+                for image in results["images_results"]:
+                    if image["original"] not in image_results:
+                        print(image["original"])
+                        image_results.append(image["original"])
+                
+                # update to the next page
+                params["ijn"] += 1
+            else:
+                images_is_present = False
+                print(results["error"])
+    
+    print(json.dumps(image_results, indent=2))
+    print(len(image_results))
+
+    # -----------------------
+    # Downloading images
+
+    # for index, image in enumerate(results['images_results']):
+
+        # print(f'Downloading {index} image...')
+        
+    #     opener=urllib.request.build_opener()
+    #     opener.addheaders=[('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.3538.102 Safari/537.36 Edge/18.19582')]
+    #     urllib.request.install_opener(opener)
+
+    #     urllib.request.urlretrieve(image['original'], f'SerpApi_Images/original_size_img_{index}.jpg')
