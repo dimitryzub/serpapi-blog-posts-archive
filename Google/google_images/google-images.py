@@ -18,7 +18,6 @@ html = requests.get("https://www.google.com/search", params=params, headers=head
 soup = BeautifulSoup(html.text, "lxml")
 
 def get_images_with_request_headers():
-    del params["ijn"]
     params["content-type"] = "image/png" # parameter that indicate the original media type 
 
     return [img["src"] for img in soup.select("img")]
@@ -98,7 +97,7 @@ def get_original_images():
         bytes(bytes(img, "ascii").decode("unicode-escape"), "ascii").decode("unicode-escape") for img in matched_google_full_resolution_images
     ]
     
-    for metadata, thumbnail, original in zip(soup.select('.isv-r.PNCib.MSM1fd.BUooTd'), thumbnails, full_res_images):
+    for index, (metadata, thumbnail, original) in enumerate(zip(soup.select(".isv-r.PNCib.MSM1fd.BUooTd"), thumbnails, full_res_images), start=1):
         google_images.append({
             "title": metadata.select_one(".VFACy.kGQAp.sMi44c.lNHeqe.WGvvNb")["title"],
             "link": metadata.select_one(".VFACy.kGQAp.sMi44c.lNHeqe.WGvvNb")["href"],
@@ -108,13 +107,13 @@ def get_original_images():
         })
 
         # Download original images
-        # print(f'Downloading {index} image...')
+        print(f"Downloading {index} image...")
         
-        # opener=urllib.request.build_opener()
-        # opener.addheaders=[('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36')]
-        # urllib.request.install_opener(opener)
+        opener=urllib.request.build_opener()
+        opener.addheaders=[("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.114 Safari/537.36")]
+        urllib.request.install_opener(opener)
 
-        # urllib.request.urlretrieve(original, f'Bs4_Images/original_size_img_{index}.jpg')
+        urllib.request.urlretrieve(original, f"Bs4_Images/original_size_img_{index}.jpg")
 
     return google_images
 
@@ -142,7 +141,6 @@ def serpapi_get_google_images():
             if "error" not in results:
                 for image in results["images_results"]:
                     if image["original"] not in image_results:
-                        print(image["original"])
                         image_results.append(image["original"])
                 
                 # update to the next page
@@ -154,15 +152,14 @@ def serpapi_get_google_images():
     # -----------------------
     # Downloading images
 
-    # for index, image in enumerate(results['images_results']):
-
-        # print(f'Downloading {index} image...')
+    for index, image in enumerate(results["images_results"], start=1):
+        print(f"Downloading {index} image...")
         
-    #     opener=urllib.request.build_opener()
-    #     opener.addheaders=[('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.3538.102 Safari/537.36 Edge/18.19582')]
-    #     urllib.request.install_opener(opener)
+        opener=urllib.request.build_opener()
+        opener.addheaders=[("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.114 Safari/537.36")]
+        urllib.request.install_opener(opener)
 
-    #     urllib.request.urlretrieve(image['original'], f'SerpApi_Images/original_size_img_{index}.jpg')
+        urllib.request.urlretrieve(image["original"], f"SerpApi_Images/original_size_img_{index}.jpg")
 
     print(json.dumps(image_results, indent=2))
     print(len(image_results))
