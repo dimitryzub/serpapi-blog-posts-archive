@@ -213,8 +213,7 @@ soup = BeautifulSoup(html.text, "lxml")
 |Code|Explanation|
 |----|-----------|
 |[`timeout=30`](https://docs.python-requests.org/en/master/user/quickstart/#timeouts)| to stop waiting for response after 30 seconds.|
-|`Selector(text=html.text)`|where passed HTML from the response will be processed by `parsel`.|
-|`html.text, "lxml"`|`html.text` will return a textual HTML data and `"lxml"` will be set as a XML/HTML processor, not the default `html.parser`|
+|`BeautifulSoup(html.text, "lxml")`|`html.text` will return a textual HTML data and `"lxml"` will be set as a XML/HTML processor, not the default `html.parser`|
 
 
 Extracting data with request headers only, no regular expression the moment:
