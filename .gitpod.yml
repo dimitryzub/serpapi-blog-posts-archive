@@ -5,10 +5,16 @@ tasks:
       sudo apt-get update -y && sudo apt-get upgrade -y
       # playwright dependencies
       sudo apt-get install -y libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libatspi2.0-0
-  - name: Install Python Dependencies
+  - name: Create VirtualEnv, Install Python Dependencies
     init: |
+      python -m venv virtual-env
+      source virtual-env/bin/activate
       pip install -r requirements.txt
-  
+
+github:
+  prebuilds:
+    addBadge: true
+
 vscode:
   extensions:
     - usernamehw.errorlens

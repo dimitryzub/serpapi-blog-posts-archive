@@ -1,6 +1,3 @@
-# https://replit.com/@DimitryZub1/DimLustrousBoards#main.py
-
-
 import requests, json, re
 from parsel import Selector
 
@@ -13,33 +10,44 @@ params = {
     "hl": "en",              # language of the search
     "gl": "us",              # country of the search
     "num": "100",            # number of search results per page
-    "tbm": "nws"             # news results
+    "tbm": "nws",            # news results
+    "start": 0               # page nubmer
 }
 
-html = requests.get("https://www.google.com/search", headers=headers, params=params, timeout=30)
-selector = Selector(text=html.text)
-
 news_results = []
+page_num = 0
 
-# extract thumbnails
-all_script_tags = selector.css("script::text").getall()
+while True:
+    page_num += 1
+    print(page_num)
 
-for result, thumbnail_id in zip(selector.css(".xuvV6b"), selector.css(".FAkayc img::attr(id)")):
-    thumbnails = re.findall(r"s=\'([^']+)\'\;var\s?ii\=\['{_id}'\];".format(_id=thumbnail_id.get()), str(all_script_tags))
+    html = requests.get("https://www.google.com/search", headers=headers, params=params, timeout=30)
+    selector = Selector(text=html.text)
 
-    decoded_thumbnail = "".join([
-        bytes(bytes(img, "ascii").decode("unicode-escape"), "ascii").decode("unicode-escape") for img in thumbnails
-    ])
-    
-    news_results.append(
-        {
-            "title": result.css(".MBeuO::text").get(),
-            "link": result.css("a.WlydOe::attr(href)").get(),
-            "source": result.css(".NUnG9d span::text").get(),
-            "snippet": result.css(".GI74Re::text").get(),
-            "date_published": result.css(".ZE0LJd span::text").get(),
-            "thumbnail": None if decoded_thumbnail == "" else decoded_thumbnail
-        }
-    )
+    # extract thumbnails
+    all_script_tags = selector.css("script::text").getall()
+
+    for result, thumbnail_id in zip(selector.css(".xuvV6b"), selector.css(".FAkayc img::attr(id)")):
+        thumbnails = re.findall(r"s=\'([^']+)\'\;var\s?ii\=\['{_id}'\];".format(_id=thumbnail_id.get()), str(all_script_tags))
+
+        decoded_thumbnail = "".join([
+            bytes(bytes(img, "ascii").decode("unicode-escape"), "ascii").decode("unicode-escape") for img in thumbnails
+        ])
+
+        news_results.append(
+            {
+                "title": result.css(".MBeuO::text").get(),
+                "link": result.css("a.WlydOe::attr(href)").get(),
+                "source": result.css(".NUnG9d span::text").get(),
+                "snippet": result.css(".GI74Re::text").get(),
+                "date_published": result.css(".ZE0LJd span::text").get(),
+                "thumbnail": None if decoded_thumbnail == "" else decoded_thumbnail
+            }
+        )
+
+    if selector.css(".d6cvqb a[id=pnnext]").get():
+        params["start"] += 10
+    else:
+        break 
 
 print(json.dumps(news_results, indent=2, ensure_ascii=False))
