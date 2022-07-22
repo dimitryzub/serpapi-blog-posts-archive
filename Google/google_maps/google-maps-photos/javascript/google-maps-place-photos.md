@@ -24,7 +24,7 @@ The Gif below illustrates the approach of selecting different parts of the resul
 
 <h2 id='full_code'>Full code</h2>
 
-📌Note: to get a place URL you may use the tutorial from my blog post ["Web Scraping Google Maps Places with Nodejs"](https://serpapi.com/blog/web-scraping-google-maps-places-with-nodejs/).
+📌Note: to get a place URL you may use the tutorial from my blog post [Web Scraping Google Maps Places with Nodejs](https://serpapi.com/blog/web-scraping-google-maps-places-with-nodejs/#full_code).
 
 ```javascript
 const puppeteer = require("puppeteer-extra");
@@ -413,7 +413,7 @@ The difference is that you can get all full image links and you won't have to wr
 
 First, we need to install [`google-search-results-nodejs`](https://www.npmjs.com/package/google-search-results-nodejs). To do this you need to enter in your console: `npm i google-search-results-nodejs`
 
-📌Note: To make our search we need the `data_id` parameter. You can take it using the guide from my blog post ["Web Scraping Google Maps Places with Nodejs"](https://serpapi.com/blog/web-scraping-google-maps-places-with-nodejs/).
+📌Note: To make our search we need the `data_id` parameter. You can take it using the guide from my blog post [Web Scraping Google Maps Places with Nodejs](https://serpapi.com/blog/web-scraping-google-maps-places-with-nodejs/#serp_api).
 
 ```javascript
 const SerpApi = require("google-search-results-nodejs");
