@@ -2,6 +2,7 @@
 - <a href="#prerequisites">Prerequisites</a>
 - <a href="#fullcode">Full Code</a>
     - <a href="#code_explanation">Code Explanation</a>
+    - <a href="#pagination_code">Full Pagination Code</a>
 - <a href="#links">Links</a>
 
 <h2 id="what_will_be_scraped">What will be scraped</h2>
@@ -203,6 +204,71 @@ Print extracted data:
 ```python
 print(json.dumps(news_results, indent=2, ensure_ascii=False))
 ```
+
+<h3 id="pagination_code">Full Pagination Code</h3>
+
+The only difference is that we adding:
+- `while` loop to iterate over all pages.
+- `if` statement to check for the `"Next"` presense.
+- increments `params["start"]` parameter by `10` to paginate to the next page.
+
+```python
+import requests, json, re
+from parsel import Selector
+
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.114 Safari/537.36"
+}
+
+params = {
+    "q": "gta san andreas",  # search query
+    "hl": "en",              # language of the search
+    "gl": "us",              # country of the search
+    "num": "100",            # number of search results per page
+    "tbm": "nws",            # news results
+    "start": 0               # page nubmer
+}
+
+news_results = []
+page_num = 0
+
+while True:
+    page_num += 1
+    print(page_num)
+
+    html = requests.get("https://www.google.com/search", headers=headers, params=params, timeout=30)
+    selector = Selector(text=html.text)
+
+    # extract thumbnails
+    all_script_tags = selector.css("script::text").getall()
+
+    for result, thumbnail_id in zip(selector.css(".xuvV6b"), selector.css(".FAkayc img::attr(id)")):
+        thumbnails = re.findall(r"s=\'([^']+)\'\;var\s?ii\=\['{_id}'\];".format(_id=thumbnail_id.get()), str(all_script_tags))
+
+        decoded_thumbnail = "".join([
+            bytes(bytes(img, "ascii").decode("unicode-escape"), "ascii").decode("unicode-escape") for img in thumbnails
+        ])
+
+        news_results.append(
+            {
+                "title": result.css(".MBeuO::text").get(),
+                "link": result.css("a.WlydOe::attr(href)").get(),
+                "source": result.css(".NUnG9d span::text").get(),
+                "snippet": result.css(".GI74Re::text").get(),
+                "date_published": result.css(".ZE0LJd span::text").get(),
+                "thumbnail": None if decoded_thumbnail == "" else decoded_thumbnail
+            }
+        )
+
+    if selector.css(".d6cvqb a[id=pnnext]").get():
+        params["start"] += 10
+    else:
+        break 
+
+print(json.dumps(news_results, indent=2, ensure_ascii=False))
+```
+
+
 
 ### Using [Google News Result API](https://serpapi.com/news-results)
 
