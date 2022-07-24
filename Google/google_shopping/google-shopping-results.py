@@ -11,8 +11,7 @@ params = {
 
 # https://docs.python-requests.org/en/master/user/quickstart/#custom-headers
 headers = {
-    "User-Agent":
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"
 }
 
 html = requests.get("https://www.google.com/search", params=params, headers=headers, timeout=30)
