@@ -15,11 +15,11 @@ headers = {
 }
 
 html = requests.get("https://www.google.com/search", params=params, headers=headers, timeout=30)
-soup = BeautifulSoup(html.text, 'lxml')
+soup = BeautifulSoup(html.text, "lxml")
 
 
 def get_original_images():
-	all_script_tags = soup.select('script')
+	all_script_tags = soup.select("script")
 	
 	image_urls = []
 	
@@ -29,7 +29,7 @@ def get_original_images():
 			url_with_unicode = re.findall(rf"var\s?_u='(.*)';var\s?_i='{result['data-pck']}';", str(script_tag))
 			
 			if url_with_unicode:
-				url_decode = bytes(url_with_unicode[0], 'ascii').decode('unicode-escape')
+				url_decode = bytes(url_with_unicode[0], "ascii").decode("unicode-escape")
 				image_urls.append(url_decode)
 				break
 	
@@ -43,8 +43,8 @@ def download_original_images(image_urls):
 		image = requests.get(image_url, headers=headers, timeout=30)
 	
 		if image.status_code == 200:
-			print(f'Downloading {index} image...')
-			with open(f"images/image_{index}.jpeg", 'wb') as file:
+			print(f"Downloading {index} image...")
+			with open(f"images/image_{index}.jpeg", "wb") as file:
 				file.write(image.content)
 
 
@@ -54,7 +54,7 @@ def get_suggested_search_data():
 	for result, thumbnail in zip(soup.select(".Qlx7of .i0X6df"), get_original_images()):
 		
 		title = result.select_one(".Xjkr3b").text
-		product_link = f"https://www.google.com" + result.select_one(".Lq5OHe").get("href")
+		product_link = "https://www.google.com" + result.select_one(".Lq5OHe").get("href")
 	
 		try:
 			reviews_and_rating = result.select_one(".NzUzee div").get("aria-label").split(", ")
@@ -72,7 +72,7 @@ def get_suggested_search_data():
 		try:
 			container = result.select_one(".zLPF4b div").next_sibling
 			store_rating = container.select_one(".QIrs8").text
-			store_reviews_link = "https://www.google.com" + container.select_one(".QhE5Fb").get('href')
+			store_reviews_link = "https://www.google.com" + container.select_one(".QhE5Fb").get("href")
 			if container.select_one(".i55gLe"):
 				store_reviews = container.select_one(".i55gLe").text
 			else:
@@ -83,7 +83,7 @@ def get_suggested_search_data():
 			store_reviews = None
 
 		try:
-			compare_prices_link = "https://www.google.com" + result.select_one(".Ldx8hd .iXEZD").get('href')
+			compare_prices_link = "https://www.google.com" + result.select_one(".Ldx8hd .iXEZD").get("href")
 		except:
 			compare_prices_link = None
 
